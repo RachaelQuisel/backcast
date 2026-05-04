@@ -17,14 +17,14 @@ export default function Log() {
   const { exerciseId } = useLocalSearchParams<{ exerciseId: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { age, targetAge, addLog, logs, customTargets } = useUserStore();
+  const { age, targetAge, activityLevel, addLog, logs, customTargets } = useUserStore();
   const [value, setValue] = useState('');
 
   const exercise = EXERCISES.find((e) => e.id === exerciseId);
   if (!exercise || !age) return null;
 
   const effectiveBase = customTargets[exercise.id] ?? exercise.baseValueAt100;
-  const currentTarget = backcast(effectiveBase, age, targetAge);
+  const currentTarget = backcast(effectiveBase, age, targetAge, activityLevel);
 
   // Previous logs for this exercise
   const previousLogs = logs

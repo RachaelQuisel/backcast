@@ -10,12 +10,17 @@ create table if not exists profiles (
   sex text check (sex in ('male', 'female')),
   weight integer check (weight > 0 and weight <= 1000),
   target_age integer default 80 check (target_age >= 70 and target_age <= 120),
+  activity_level text default 'active' check (activity_level in ('active', 'sedentary')),
   selected_goals text[] default '{}',
   custom_targets jsonb default '{}',
   has_onboarded boolean default false,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+-- Migration for existing databases (safe to re-run):
+alter table profiles add column if not exists activity_level text default 'active'
+  check (activity_level in ('active', 'sedentary'));
 
 -- 2. Workout logs table
 create table if not exists workout_logs (

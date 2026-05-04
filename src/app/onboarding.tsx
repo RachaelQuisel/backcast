@@ -12,6 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
+import { ActivityLevel } from '@/constants/exercises';
 
 export default function Onboarding() {
   const router = useRouter();
@@ -23,6 +24,7 @@ export default function Onboarding() {
   const [age, setAge] = useState('');
   const [sex, setSex] = useState<'male' | 'female' | null>(null);
   const [weight, setWeight] = useState('');
+  const [activityLevel, setActivityLevel] = useState<ActivityLevel | null>(null);
   const [targetAge, setTargetAge] = useState('80');
 
   const canProceed = () => {
@@ -30,12 +32,13 @@ export default function Onboarding() {
     if (step === 1) return age !== '' && Number(age) > 0 && Number(age) < 100;
     if (step === 2) return sex !== null;
     if (step === 3) return weight !== '' && Number(weight) > 0;
-    if (step === 4) return Number(targetAge) >= 70 && Number(targetAge) <= 100;
+    if (step === 4) return activityLevel !== null;
+    if (step === 5) return Number(targetAge) >= 70 && Number(targetAge) <= 100;
     return false;
   };
 
   const handleNext = () => {
-    if (step < 4) {
+    if (step < 5) {
       setStep(step + 1);
     } else {
       setProfile({
@@ -43,6 +46,7 @@ export default function Onboarding() {
         sex: sex!,
         weight: Number(weight),
         targetAge: Number(targetAge),
+        activityLevel: activityLevel!,
       });
       completeOnboarding();
       router.replace('/goals');
@@ -77,10 +81,11 @@ export default function Onboarding() {
             <View style={styles.caveatBox}>
               <Text style={styles.caveatTitle}>A few things to know</Text>
               <Text style={styles.caveatText}>
-                This app uses an 8% per decade decline rate, in line with research on adults who
-                stay active (Fitzgerald 1997 found ~5% per decade for VO2 max in trained
-                individuals; Wroblewski 2011 found minimal strength loss in master's athletes
-                through age 81). Sedentary populations decline faster — closer to 10-15%.
+                This app uses 8% per decade decline if you tell it you're active, and 13% if you
+                tell it you're sedentary. The active rate matches research on trained adults
+                (Fitzgerald 1997 found ~5% per decade for VO2 max in trained individuals;
+                Wroblewski 2011 found minimal strength loss in master's athletes through age 81).
+                The sedentary rate matches population averages for adults who don't train.
               </Text>
               <Text style={styles.caveatText}>
                 These numbers are a compass, not a GPS. They're guideposts to help you think ahead
@@ -164,6 +169,58 @@ export default function Onboarding() {
 
         {step === 4 && (
           <View style={styles.stepContainer}>
+            <Text style={styles.stepTitle}>How active are you right now?</Text>
+            <Text style={styles.stepSubtitle}>
+              This sets the decline rate the app uses to calculate your targets. You can think
+              of "active" as 150+ minutes a week of moderate exercise, or regular strength work.
+            </Text>
+            <View style={styles.activityColumn}>
+              <Pressable
+                style={[
+                  styles.activityCard,
+                  activityLevel === 'active' && styles.optionSelected,
+                ]}
+                onPress={() => setActivityLevel('active')}
+              >
+                <Text
+                  style={[
+                    styles.activityTitle,
+                    activityLevel === 'active' && styles.optionTextSelected,
+                  ]}
+                >
+                  Active
+                </Text>
+                <Text style={styles.activityBody}>
+                  8% decline per decade — research on trained adults (Fitzgerald 1997, Wroblewski
+                  2011).
+                </Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.activityCard,
+                  activityLevel === 'sedentary' && styles.optionSelected,
+                ]}
+                onPress={() => setActivityLevel('sedentary')}
+              >
+                <Text
+                  style={[
+                    styles.activityTitle,
+                    activityLevel === 'sedentary' && styles.optionTextSelected,
+                  ]}
+                >
+                  Sedentary
+                </Text>
+                <Text style={styles.activityBody}>
+                  13% decline per decade — population averages for adults who don't train
+                  regularly.
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+
+        {step === 5 && (
+          <View style={styles.stepContainer}>
             <Text style={styles.stepTitle}>What age are you planning for?</Text>
             <Text style={styles.stepSubtitle}>
               What age do you want to still be doing these things?
@@ -208,7 +265,7 @@ export default function Onboarding() {
           disabled={!canProceed()}
         >
           <Text style={styles.buttonText}>
-            {step === 0 ? "Let's go" : step === 4 ? 'Choose your goals' : 'Next'}
+            {step === 0 ? "Let's go" : step === 5 ? 'Choose your goals' : 'Next'}
           </Text>
         </Pressable>
       </ScrollView>
@@ -323,6 +380,28 @@ const styles = StyleSheet.create({
   },
   optionTextSelected: {
     color: '#4A9EFF',
+  },
+  activityColumn: {
+    marginTop: 16,
+    gap: 12,
+  },
+  activityCard: {
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#333',
+  },
+  activityTitle: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  activityBody: {
+    fontSize: 13,
+    color: '#888',
+    lineHeight: 18,
   },
   ageHints: {
     flexDirection: 'row',

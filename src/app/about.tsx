@@ -65,19 +65,25 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>How the math works</Text>
           <Text style={styles.body}>
-            This app uses an 8% decline per decade rate, applied to Peter Attia's Centenarian
-            Decathlon target values at age 100. The 8% rate aligns with what the research shows
-            for adults who keep moving.
+            This app uses Peter Attia's Centenarian Decathlon target values at age 100, then
+            backcasts using a compound decline rate that depends on the activity level you chose
+            during onboarding:
           </Text>
           <Text style={styles.body}>
-            Fitzgerald et al. (1997) found VO2 max declines about 5% per decade in trained adults
-            versus 10% in sedentary ones. Wroblewski et al. (2011) found no significant
-            strength or muscle decline in master's athletes through age 81.
+            • <Text style={styles.bodyEmphasis}>Active: 8% per decade.</Text> Aligns with research
+            on trained adults — Fitzgerald et al. (1997) found ~5% per decade for VO2 max in
+            trained individuals; Wroblewski et al. (2011) found minimal strength loss in master's
+            athletes through age 81.
           </Text>
           <Text style={styles.body}>
-            8% sits between "trained" and "sedentary" — assuming you're staying reasonably
-            active. If you train harder than that, you'll outperform these targets. If you're
-            sedentary, the targets understate what you'll need to make up later.
+            • <Text style={styles.bodyEmphasis}>Sedentary: 13% per decade.</Text> Closer to
+            population averages for adults who don't train regularly (Pollock 1997; sedentary
+            cohorts in Fitzgerald 1997).
+          </Text>
+          <Text style={styles.body}>
+            If you're not sure which fits you, "active" generally means 150+ minutes a week of
+            moderate exercise, or regular strength training. The targets are guideposts either
+            way — change activity level any time and the math will recalibrate.
           </Text>
         </View>
 
@@ -172,6 +178,10 @@ const styles = StyleSheet.create({
     color: '#999',
     lineHeight: 24,
     marginBottom: 10,
+  },
+  bodyEmphasis: {
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   quote: {
     fontSize: 17,

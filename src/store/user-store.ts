@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { ensureSession } from '@/lib/auth';
+import { ActivityLevel, DEFAULT_ACTIVITY_LEVEL } from '@/constants/exercises';
 
 // Dedupes concurrent initialize() calls (e.g. Strict Mode double-mount)
 // so we don't create two anonymous users on first launch.
@@ -36,6 +37,7 @@ interface UserState {
   sex: 'male' | 'female' | null;
   weight: number | null; // lbs
   targetAge: number;
+  activityLevel: ActivityLevel;
   hasOnboarded: boolean;
 
   // Selected goals (exercise IDs the user cares about)
@@ -54,6 +56,7 @@ interface UserState {
     sex: 'male' | 'female';
     weight: number;
     targetAge?: number;
+    activityLevel?: ActivityLevel;
   }) => void;
   setSelectedGoals: (goals: string[]) => void;
   toggleGoal: (exerciseId: string) => void;
@@ -71,6 +74,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   sex: null,
   weight: null,
   targetAge: 80,
+  activityLevel: DEFAULT_ACTIVITY_LEVEL,
   hasOnboarded: false,
   selectedGoals: [],
   customTargets: {},
@@ -101,6 +105,7 @@ export const useUserStore = create<UserState>((set, get) => ({
             sex: profile.sex as 'male' | 'female' | null,
             weight: profile.weight,
             targetAge: profile.target_age ?? 80,
+            activityLevel: (profile.activity_level as ActivityLevel) ?? DEFAULT_ACTIVITY_LEVEL,
             selectedGoals: profile.selected_goals ?? [],
             customTargets: profile.custom_targets ?? {},
             hasOnboarded: profile.has_onboarded ?? false,
@@ -137,14 +142,16 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   setProfile: (profile) => {
+    const targetAge = profile.targetAge ?? 80;
+    const activityLevel = profile.activityLevel ?? get().activityLevel;
     set({
       age: profile.age,
       sex: profile.sex,
       weight: profile.weight,
-      targetAge: profile.targetAge ?? 80,
+      targetAge,
+      activityLevel,
     });
 
-    // Sync to Supabase
     const userId = get().userId;
     if (userId) {
       catchSync('Profile sync', supabase
@@ -154,7 +161,8 @@ export const useUserStore = create<UserState>((set, get) => ({
           age: profile.age,
           sex: profile.sex,
           weight: profile.weight,
-          target_age: profile.targetAge ?? 80,
+          target_age: targetAge,
+          activity_level: activityLevel,
         }));
     }
   },
@@ -267,6 +275,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       sex: null,
       weight: null,
       targetAge: 80,
+      activityLevel: DEFAULT_ACTIVITY_LEVEL,
       hasOnboarded: false,
       selectedGoals: [],
       customTargets: {},

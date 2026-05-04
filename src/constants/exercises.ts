@@ -1,13 +1,20 @@
 /**
  * Backcast exercise definitions based on Peter Attia's Centenarian Decathlon.
- * Base values are targets at age 100. The app backcasts from these using
- * an 8% decline per decade compound formula, which aligns with research on
- * trained adults (Fitzgerald 1997: 5%/decade VO2 active, Wroblewski 2011:
- * minimal strength loss in master's athletes through age 81).
+ * Base values are targets at age 100. The app backcasts from these using a
+ * compound decline formula whose rate depends on the user's activity level:
+ *   - active:    8%/decade (Fitzgerald 1997, Wroblewski 2011)
+ *   - sedentary: 13%/decade (population averages, Pollock 1997)
  */
 
-/** Compound retention factor per decade (1 - decline rate). 0.92 = 8% decline. */
-export const DECLINE_RETENTION_PER_DECADE = 0.92;
+export type ActivityLevel = 'active' | 'sedentary';
+
+/** Retention factor per decade (1 - decline rate). */
+export const RETENTION_BY_ACTIVITY: Record<ActivityLevel, number> = {
+  active: 0.92, // 8% decline
+  sedentary: 0.87, // 13% decline
+};
+
+export const DEFAULT_ACTIVITY_LEVEL: ActivityLevel = 'active';
 
 export interface Exercise {
   id: string;
@@ -87,6 +94,10 @@ export const EXERCISES: Exercise[] = [
   },
 ];
 
+export function retentionFor(activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL): number {
+  return RETENTION_BY_ACTIVITY[activityLevel];
+}
+
 /**
  * What you need NOW to hit the base value at your target age.
  * Base values are stored at age 100, so we compound the retention factor
@@ -95,16 +106,22 @@ export const EXERCISES: Exercise[] = [
 export function backcast(
   baseValueAt100: number,
   currentAge: number,
-  targetAge: number = 80
+  targetAge: number = 80,
+  activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL
 ): number {
+  const retention = retentionFor(activityLevel);
   const decadesFromTargetTo100 = (100 - targetAge) / 10;
-  const valueAtTargetAge =
-    baseValueAt100 / Math.pow(DECLINE_RETENTION_PER_DECADE, decadesFromTargetTo100);
+  const valueAtTargetAge = baseValueAt100 / Math.pow(retention, decadesFromTargetTo100);
   const decadesRemaining = (targetAge - currentAge) / 10;
-  return valueAtTargetAge / Math.pow(DECLINE_RETENTION_PER_DECADE, decadesRemaining);
+  return valueAtTargetAge / Math.pow(retention, decadesRemaining);
 }
 
-export function targetAtAge(baseValueAt100: number, age: number): number {
+export function targetAtAge(
+  baseValueAt100: number,
+  age: number,
+  activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL
+): number {
+  const retention = retentionFor(activityLevel);
   const decadesFrom100 = (100 - age) / 10;
-  return baseValueAt100 / Math.pow(DECLINE_RETENTION_PER_DECADE, decadesFrom100);
+  return baseValueAt100 / Math.pow(retention, decadesFrom100);
 }
