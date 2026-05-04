@@ -3,6 +3,8 @@ import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useUserStore } from '@/store/user-store';
 
+export { ErrorBoundary } from '@/components/error-boundary';
+
 export default function RootLayout() {
   const initialize = useUserStore((s) => s.initialize);
 
