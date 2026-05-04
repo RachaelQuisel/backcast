@@ -2,6 +2,10 @@ import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { ensureSession } from '@/lib/auth';
 
+// Dedupes concurrent initialize() calls (e.g. Strict Mode double-mount)
+// so we don't create two anonymous users on first launch.
+let initPromise: Promise<void> | null = null;
+
 /** Swallow network/unexpected errors on fire-and-forget Supabase calls */
 function catchSync(label: string, promise: PromiseLike<{ error: { message: string } | null }>) {
   promise
@@ -73,62 +77,63 @@ export const useUserStore = create<UserState>((set, get) => ({
   logs: [],
 
   initialize: async () => {
-    // Guard against double-mount (React Strict Mode)
     if (get().userId && !get().isLoading) return;
+    if (initPromise) return initPromise;
 
-    set({ isLoading: true });
+    initPromise = (async () => {
+      set({ isLoading: true });
 
-    try {
-      const userId = await ensureSession();
-      if (!userId) {
+      try {
+        const userId = await ensureSession();
+        if (!userId) return;
+
+        set({ userId });
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle();
+
+        if (profile) {
+          set({
+            age: profile.age,
+            sex: profile.sex as 'male' | 'female' | null,
+            weight: profile.weight,
+            targetAge: profile.target_age ?? 80,
+            selectedGoals: profile.selected_goals ?? [],
+            customTargets: profile.custom_targets ?? {},
+            hasOnboarded: profile.has_onboarded ?? false,
+          });
+        }
+
+        const { data: logs } = await supabase
+          .from('workout_logs')
+          .select('*')
+          .eq('user_id', userId)
+          .order('logged_at', { ascending: false });
+
+        if (logs) {
+          set({
+            logs: logs.map((l) => ({
+              id: l.id,
+              exerciseId: l.exercise_id,
+              value: Number(l.value),
+              loggedAt: l.logged_at,
+            })),
+          });
+        }
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Initialize failed:', message);
+      } finally {
         set({ isLoading: false });
-        return;
+        // Allow retry after failure; success is guarded by the userId check above.
+        initPromise = null;
       }
+    })();
 
-      set({ userId });
-
-      // Load profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (profile) {
-        set({
-          age: profile.age,
-          sex: profile.sex as 'male' | 'female' | null,
-          weight: profile.weight,
-          targetAge: profile.target_age ?? 80,
-          selectedGoals: profile.selected_goals ?? [],
-          customTargets: profile.custom_targets ?? {},
-          hasOnboarded: profile.has_onboarded ?? false,
-        });
-      }
-
-      // Load workout logs
-      const { data: logs } = await supabase
-        .from('workout_logs')
-        .select('*')
-        .eq('user_id', userId)
-        .order('logged_at', { ascending: false });
-
-      if (logs) {
-        set({
-          logs: logs.map((l) => ({
-            id: l.id,
-            exerciseId: l.exercise_id,
-            value: Number(l.value),
-            loggedAt: l.logged_at,
-          })),
-        });
-      }
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Initialize failed:', message);
-    } finally {
-      set({ isLoading: false });
-    }
+    return initPromise;
   },
 
   setProfile: (profile) => {
@@ -204,24 +209,31 @@ export const useUserStore = create<UserState>((set, get) => ({
       logs: [newLog, ...state.logs],
     }));
 
-    // Sync to Supabase
     const userId = get().userId;
-    if (userId) {
-      supabase
-        .from('workout_logs')
-        .insert({
-          user_id: userId,
-          exercise_id: log.exerciseId,
-          value: log.value,
-          logged_at: log.loggedAt,
-        })
-        .select('id')
-        .single()
-        .then(({ data, error }) => {
+    if (!userId) return;
+
+    const rollback = () => {
+      set((state) => ({
+        logs: state.logs.filter((l) => l.id !== localId),
+      }));
+    };
+
+    supabase
+      .from('workout_logs')
+      .insert({
+        user_id: userId,
+        exercise_id: log.exerciseId,
+        value: log.value,
+        logged_at: log.loggedAt,
+      })
+      .select('id')
+      .single()
+      .then(
+        ({ data, error }) => {
           if (error) {
             console.error('Log sync:', error.message);
+            rollback();
           } else if (data) {
-            // Replace local ID with Supabase ID
             set((state) => ({
               logs: state.logs.map((l) =>
                 l.id === localId ? { ...l, id: data.id } : l
@@ -232,8 +244,9 @@ export const useUserStore = create<UserState>((set, get) => ({
         (err: unknown) => {
           const message = err instanceof Error ? err.message : 'Unknown error';
           console.error('Log sync (exception):', message);
-        });
-    }
+          rollback();
+        }
+      );
   },
 
   completeOnboarding: () => {

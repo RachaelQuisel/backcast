@@ -2,9 +2,19 @@ import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-// Loaded from .env via Expo's EXPO_PUBLIC_ prefix convention
-const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL) {
+  throw new Error(
+    'Missing EXPO_PUBLIC_SUPABASE_URL — set it in .env locally and in your Vercel project env vars.'
+  );
+}
+if (!SUPABASE_ANON_KEY) {
+  throw new Error(
+    'Missing EXPO_PUBLIC_SUPABASE_ANON_KEY — set it in .env locally and in your Vercel project env vars.'
+  );
+}
 
 /**
  * Custom storage adapter using expo-secure-store for native
