@@ -77,9 +77,10 @@ export default function Onboarding() {
             <View style={styles.caveatBox}>
               <Text style={styles.caveatTitle}>A few things to know</Text>
               <Text style={styles.caveatText}>
-                This app uses a 15% per decade decline rate, which is a conservative estimate based
-                on population averages. Research on master's athletes who maintain training shows
-                decline rates of only 5-7% per decade.
+                This app uses an 8% per decade decline rate, in line with research on adults who
+                stay active (Fitzgerald 1997 found ~5% per decade for VO2 max in trained
+                individuals; Wroblewski 2011 found minimal strength loss in master's athletes
+                through age 81). Sedentary populations decline faster — closer to 10-15%.
               </Text>
               <Text style={styles.caveatText}>
                 These numbers are a compass, not a GPS. They're guideposts to help you think ahead

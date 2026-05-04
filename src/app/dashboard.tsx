@@ -3,7 +3,12 @@ import { View, Text, Pressable, StyleSheet, ScrollView, TextInput } from 'react-
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
-import { EXERCISES, backcast, targetAtAge } from '@/constants/exercises';
+import {
+  EXERCISES,
+  backcast,
+  targetAtAge,
+  DECLINE_RETENTION_PER_DECADE,
+} from '@/constants/exercises';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -154,9 +159,9 @@ export default function Dashboard() {
                         e.stopPropagation();
                         const num = Number(editValue);
                         if (num > 0) {
-                          // Convert the user's goal-at-target-age back to a base-at-100 value
                           const decadesFromTargetTo100 = (100 - targetAge) / 10;
-                          const newBaseAt100 = num * Math.pow(0.85, decadesFromTargetTo100);
+                          const newBaseAt100 =
+                            num * Math.pow(DECLINE_RETENTION_PER_DECADE, decadesFromTargetTo100);
                           setCustomTarget(exercise.id, newBaseAt100);
                         }
                         setEditingExercise(null);

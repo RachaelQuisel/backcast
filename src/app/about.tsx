@@ -65,18 +65,19 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>How the math works</Text>
           <Text style={styles.body}>
-            This app uses a 15% decline per decade rate, based on Peter Attia's Centenarian
-            Decathlon framework. This is a conservative estimate drawn from population-level
-            averages.
+            This app uses an 8% decline per decade rate, applied to Peter Attia's Centenarian
+            Decathlon target values at age 100. The 8% rate aligns with what the research shows
+            for adults who keep moving.
           </Text>
           <Text style={styles.body}>
-            However, research on master's athletes — people who maintain consistent training —
-            shows decline rates of only 5-7% per decade for VO2 max, and in some studies, no
-            significant strength decline at all through age 81.
+            Fitzgerald et al. (1997) found VO2 max declines about 5% per decade in trained adults
+            versus 10% in sedentary ones. Wroblewski et al. (2011) found no significant
+            strength or muscle decline in master's athletes through age 81.
           </Text>
           <Text style={styles.body}>
-            The 15% rate builds in a safety margin. If you keep training, you'll likely
-            outperform these targets — and that's the point. Build a buffer.
+            8% sits between "trained" and "sedentary" — assuming you're staying reasonably
+            active. If you train harder than that, you'll outperform these targets. If you're
+            sedentary, the targets understate what you'll need to make up later.
           </Text>
         </View>
 

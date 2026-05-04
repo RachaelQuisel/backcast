@@ -1,8 +1,13 @@
 /**
  * Backcast exercise definitions based on Peter Attia's Centenarian Decathlon.
  * Base values are targets at age 100. The app backcasts from these using
- * a 15% decline per decade compound formula.
+ * an 8% decline per decade compound formula, which aligns with research on
+ * trained adults (Fitzgerald 1997: 5%/decade VO2 active, Wroblewski 2011:
+ * minimal strength loss in master's athletes through age 81).
  */
+
+/** Compound retention factor per decade (1 - decline rate). 0.92 = 8% decline. */
+export const DECLINE_RETENTION_PER_DECADE = 0.92;
 
 export interface Exercise {
   id: string;
@@ -83,13 +88,9 @@ export const EXERCISES: Exercise[] = [
 ];
 
 /**
- * Backcast formula: what you need NOW to hit the base value at your target age.
- * Uses 15% decline per decade (Attia's model).
- *
- * current_target = base_value_at_target / (0.85 ^ decades_remaining)
- *
- * Since we store base values at age 100, we first compute what the value
- * would be at the user's target age, then backcast to their current age.
+ * What you need NOW to hit the base value at your target age.
+ * Base values are stored at age 100, so we compound the retention factor
+ * across the decades between the user's age and 100.
  */
 export function backcast(
   baseValueAt100: number,
@@ -97,15 +98,13 @@ export function backcast(
   targetAge: number = 80
 ): number {
   const decadesFromTargetTo100 = (100 - targetAge) / 10;
-  const valueAtTargetAge = baseValueAt100 / Math.pow(0.85, decadesFromTargetTo100);
+  const valueAtTargetAge =
+    baseValueAt100 / Math.pow(DECLINE_RETENTION_PER_DECADE, decadesFromTargetTo100);
   const decadesRemaining = (targetAge - currentAge) / 10;
-  return valueAtTargetAge / Math.pow(0.85, decadesRemaining);
+  return valueAtTargetAge / Math.pow(DECLINE_RETENTION_PER_DECADE, decadesRemaining);
 }
 
-/**
- * Get the target value at a specific age (for the progress table).
- */
 export function targetAtAge(baseValueAt100: number, age: number): number {
   const decadesFrom100 = (100 - age) / 10;
-  return baseValueAt100 / Math.pow(0.85, decadesFrom100);
+  return baseValueAt100 / Math.pow(DECLINE_RETENTION_PER_DECADE, decadesFrom100);
 }
