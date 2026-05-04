@@ -1,56 +1,101 @@
-# Welcome to your Expo app 👋
+# backcast
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Pick what you want your body to be capable of in old age. The app backcasts from that target through a compound decline curve and tells you what you need to be able to do **right now** to stay on track.
 
-## Get started
+Built on [Peter Attia's Centenarian Decathlon](https://peterattiamd.com/training-for-the-centenarian-decathlon/) framework with Annie Duke's backcasting model. See `src/app/about.tsx` for the in-app explanation and `age-related-decline-research.md` for the research notes behind the math.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Quick start
 
 ```bash
-npm run reset-project
+npm install
+cp .env.example .env   # then fill in EXPO_PUBLIC_SUPABASE_URL + ANON_KEY
+npx expo start         # press `w` for web, `i` for iOS sim, `a` for Android, or scan the QR
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+The app expects a Supabase project with the schema in `supabase-schema.sql` already applied (Supabase Dashboard → SQL editor → paste + run).
 
-### Other setup steps
+## Environment
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+| Variable | Purpose | Required |
+|---|---|---|
+| `EXPO_PUBLIC_SUPABASE_URL` | Supabase project URL | yes |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key (RLS-enforced) | yes |
 
-## Learn more
+Both are baked into the public bundle — anon key is designed to be public, but **RLS policies must be enabled** (they are, in `supabase-schema.sql`).
 
-To learn more about developing your project with Expo, look at the following resources:
+## Deploy
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Auto-deploys to Vercel on every push to `main`:
 
-## Join the community
+```
+GitHub: RachaelQuisel/backcast (private)
+Vercel: xray-team-url/backcast
+Build:  npx expo export -p web → dist/
+```
 
-Join our community of developers creating universal apps.
+Both env vars must be set in the Vercel project (Production scope) for the build to succeed — verify with `npx vercel env ls`.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Tech stack
+
+- **Expo SDK 55** + **expo-router 5** (file-based routing under `src/app/`)
+- **Supabase** (anonymous auth + Postgres with RLS)
+- **Zustand** for client state (`src/store/user-store.ts`)
+- **TypeScript**, no `any`
+- **expo-secure-store** on native, `localStorage` on web (see `src/lib/supabase.ts` for the storage adapter)
+
+## Project layout
+
+```
+src/
+  app/                 # expo-router routes
+    _layout.tsx        # root layout + ErrorBoundary registration
+    index.tsx          # auth gate → onboarding or dashboard
+    onboarding.tsx     # 6-step intake (age, sex, weight, activity, target age)
+    goals.tsx          # exercise selection
+    dashboard.tsx      # main view: targets + decade roadmap
+    log.tsx            # log a single workout entry
+    about.tsx          # math + research + caveats
+  components/
+    error-boundary.tsx # wired via _layout export
+  constants/
+    exercises.ts       # Exercise list + backcast()/targetAtAge() math
+  lib/
+    supabase.ts        # client + cross-platform storage adapter
+    auth.ts            # ensureSession (anonymous sign-in)
+  store/
+    user-store.ts      # Zustand store with optimistic Supabase sync
+supabase-schema.sql    # tables, RLS policies, triggers, migrations
+vercel.json            # build config for auto-deploy
+```
+
+## Math model
+
+Targets are stored at age 100 (`baseValueAt100` per exercise). The app compounds a per-decade retention factor based on the user's chosen activity level:
+
+| Activity level | Decline / decade | Retention factor | Source |
+|---|---|---|---|
+| Active        | 8%  | 0.92 | Fitzgerald 1997 (VO2 trained), Wroblewski 2011 (master's strength) |
+| Sedentary     | 13% | 0.87 | Pollock 1997 / population averages |
+
+```
+target_at_age(age) = baseValueAt100 / retention ^ ((100 - age) / 10)
+backcast(now, target_age) = target_at_age(target_age) / retention ^ ((target_age - now) / 10)
+```
+
+Users set their activity level during onboarding and can change it any time via the dashboard pill.
+
+## Useful commands
+
+```bash
+npx expo start --web         # dev server (web)
+npx expo export -p web       # build to dist/ (what Vercel runs)
+npx tsc --noEmit             # type-check
+npx vercel ls backcast       # list recent deployments
+npx vercel inspect <url> --logs   # build logs for a specific deploy
+```
+
+## Privacy
+
+Anonymous auth — no email, no PII. Each user gets a UUID tied to their device storage. Wiping app data wipes the account. This is by design for the MVP and intentionally limits long-term portability — see the `Outstanding` section of `session_handoff.md` for the upgrade-path discussion.
