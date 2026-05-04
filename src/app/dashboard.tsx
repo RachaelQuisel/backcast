@@ -8,10 +8,19 @@ import { EXERCISES, backcast, targetAtAge, retentionFor } from '@/constants/exer
 export default function Dashboard() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { age, targetAge, activityLevel, selectedGoals, logs, customTargets, setCustomTarget } =
-    useUserStore();
+  const {
+    age,
+    targetAge,
+    activityLevel,
+    selectedGoals,
+    logs,
+    customTargets,
+    setCustomTarget,
+    setActivityLevel,
+  } = useUserStore();
   const [editingExercise, setEditingExercise] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [activityPickerOpen, setActivityPickerOpen] = useState(false);
 
   if (!age) return null;
 
@@ -72,6 +81,52 @@ export default function Dashboard() {
             <Text style={styles.ageLabel}>Your goal</Text>
           </View>
         </View>
+
+        {/* Activity level pill */}
+        <Pressable
+          style={styles.activityPill}
+          onPress={() => setActivityPickerOpen((v) => !v)}
+        >
+          <View style={styles.activityPillRow}>
+            <Text style={styles.activityPillLabel}>Activity level</Text>
+            <Text style={styles.activityPillValue}>
+              {activityLevel === 'active' ? 'Active · 8%/decade' : 'Sedentary · 13%/decade'}
+            </Text>
+            <Text style={styles.activityPillChevron}>{activityPickerOpen ? '▲' : '▼'}</Text>
+          </View>
+          {activityPickerOpen && (
+            <View style={styles.activityPickerRow}>
+              {(['active', 'sedentary'] as const).map((level) => {
+                const isSelected = activityLevel === level;
+                return (
+                  <Pressable
+                    key={level}
+                    style={[
+                      styles.activityPickerOption,
+                      isSelected && styles.activityPickerOptionSelected,
+                    ]}
+                    onPress={() => {
+                      if (!isSelected) setActivityLevel(level);
+                      setActivityPickerOpen(false);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.activityPickerOptionTitle,
+                        isSelected && styles.activityPickerOptionTitleSelected,
+                      ]}
+                    >
+                      {level === 'active' ? 'Active' : 'Sedentary'}
+                    </Text>
+                    <Text style={styles.activityPickerOptionSub}>
+                      {level === 'active' ? '8% decline / decade' : '13% decline / decade'}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
+        </Pressable>
 
         {/* Exercise cards */}
         <Text style={styles.sectionTitle}>Your targets right now</Text>
@@ -339,6 +394,63 @@ const styles = StyleSheet.create({
   arrowText: {
     fontSize: 24,
     color: '#444',
+  },
+  activityPill: {
+    backgroundColor: '#151520',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 24,
+  },
+  activityPillRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  activityPillLabel: {
+    fontSize: 13,
+    color: '#666',
+  },
+  activityPillValue: {
+    flex: 1,
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  activityPillChevron: {
+    fontSize: 10,
+    color: '#666',
+  },
+  activityPickerRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 14,
+  },
+  activityPickerOption: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#2A2A3A',
+    backgroundColor: '#1A1A2A',
+  },
+  activityPickerOptionSelected: {
+    borderColor: '#4A9EFF',
+    backgroundColor: '#1A2A3F',
+  },
+  activityPickerOptionTitle: {
+    fontSize: 15,
+    color: '#CCC',
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  activityPickerOptionTitleSelected: {
+    color: '#4A9EFF',
+  },
+  activityPickerOptionSub: {
+    fontSize: 12,
+    color: '#666',
   },
   sectionTitle: {
     fontSize: 20,

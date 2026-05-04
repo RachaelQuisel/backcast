@@ -58,6 +58,7 @@ interface UserState {
     targetAge?: number;
     activityLevel?: ActivityLevel;
   }) => void;
+  setActivityLevel: (level: ActivityLevel) => void;
   setSelectedGoals: (goals: string[]) => void;
   toggleGoal: (exerciseId: string) => void;
   setCustomTarget: (exerciseId: string, valueAt100: number) => void;
@@ -164,6 +165,18 @@ export const useUserStore = create<UserState>((set, get) => ({
           target_age: targetAge,
           activity_level: activityLevel,
         }));
+    }
+  },
+
+  setActivityLevel: (level) => {
+    set({ activityLevel: level });
+
+    const userId = get().userId;
+    if (userId) {
+      catchSync('Activity level sync', supabase
+        .from('profiles')
+        .update({ activity_level: level })
+        .eq('id', userId));
     }
   },
 
