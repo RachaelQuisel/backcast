@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet, ScrollView, TextInput } from 'react-
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
-import { EXERCISES, backcast, targetAtAge, retentionFor } from '@/constants/exercises';
+import { EXERCISES, backcast, targetAtAge } from '@/constants/exercises';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -133,7 +133,9 @@ export default function Dashboard() {
         {activeExercises.map((exercise) => {
           const effectiveBase = customTargets[exercise.id] ?? exercise.baseValueAt100;
           const currentTarget = backcast(effectiveBase, age, targetAge, activityLevel);
-          const targetAtGoal = targetAtAge(effectiveBase, targetAge, activityLevel);
+          // Under the new semantics `effectiveBase` IS the value at targetAge,
+          // so targetAtGoal === effectiveBase by construction.
+          const targetAtGoal = effectiveBase;
           const latestLog = latestLogs.get(exercise.id);
           const progress = latestLog ? (latestLog / currentTarget) * 100 : null;
           const isEditing = editingExercise === exercise.id;
@@ -210,10 +212,10 @@ export default function Dashboard() {
                         e.stopPropagation();
                         const num = Number(editValue);
                         if (num > 0) {
-                          const decadesFromTargetTo100 = (100 - targetAge) / 10;
-                          const newBaseAt100 =
-                            num * Math.pow(retentionFor(activityLevel), decadesFromTargetTo100);
-                          setCustomTarget(exercise.id, newBaseAt100);
+                          // The user's input is the value they want at targetAge.
+                          // Under the fixed math, that IS the base value we store —
+                          // no conversion needed.
+                          setCustomTarget(exercise.id, num);
                         }
                         setEditingExercise(null);
                       }}
@@ -222,8 +224,8 @@ export default function Dashboard() {
                     </Pressable>
                   </View>
                   <Text style={styles.editHint}>
-                    Default: {targetAtAge(exercise.baseValueAt100, targetAge, activityLevel).toFixed(0)} ·
-                    Min: {targetAtAge(exercise.minTargetAt100, targetAge, activityLevel).toFixed(0)}
+                    Default: {exercise.baseValueAt100.toFixed(0)} ·
+                    Min: {exercise.minTargetAt100.toFixed(0)}
                   </Text>
                 </View>
               )}
@@ -284,7 +286,7 @@ export default function Dashboard() {
                 </Text>
                 {generateDecadeAges(age, targetAge).map((a) => (
                   <Text key={a} style={[styles.decadeCell, styles.decadeValue]}>
-                    {targetAtAge(effectiveBase, a, activityLevel).toFixed(0)}
+                    {targetAtAge(effectiveBase, a, targetAge, activityLevel).toFixed(0)}
                   </Text>
                 ))}
               </View>

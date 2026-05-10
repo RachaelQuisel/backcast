@@ -99,29 +99,49 @@ export function retentionFor(activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEV
 }
 
 /**
- * What you need NOW to hit the base value at your target age.
- * Base values are stored at age 100, so we compound the retention factor
- * across the decades between the user's age and 100.
+ * What you need NOW to hit `targetValue` at `targetAge`.
+ *
+ * `targetValue` is the capability the user has committed to maintain UNTIL
+ * `targetAge` — by default `Exercise.baseValueAt100`, the centenarian-decathlon
+ * threshold from Attia's framework. Past the target age, natural decline
+ * continues unchecked (this app doesn't model post-target trajectories as
+ * a goal — it's a maintenance commitment ending at target age).
+ *
+ * The earlier version of this function took `targetAge` and ignored it:
+ * `targetAge` cancelled out algebraically because the threshold was
+ * double-anchored at age 100. That contradicted the product narrative
+ * ("pick what you want at 80, 90, or 100"). Fixed: `targetValue` is now
+ * the value AT `targetAge`, not at 100.
  */
 export function backcast(
-  baseValueAt100: number,
+  targetValue: number,
   currentAge: number,
   targetAge: number = 80,
   activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL
 ): number {
   const retention = retentionFor(activityLevel);
-  const decadesFromTargetTo100 = (100 - targetAge) / 10;
-  const valueAtTargetAge = baseValueAt100 / Math.pow(retention, decadesFromTargetTo100);
   const decadesRemaining = (targetAge - currentAge) / 10;
-  return valueAtTargetAge / Math.pow(retention, decadesRemaining);
+  return targetValue / Math.pow(retention, decadesRemaining);
 }
 
+/**
+ * The value along the user's trajectory at any age.
+ *
+ * Anchored at `targetValue` at `targetAge`. Pre-target it ramps up (you need
+ * more now than at target). Post-target it ramps down (natural decline
+ * continues). At `age === targetAge` it equals `targetValue`.
+ *
+ * Mathematically identical to `backcast`; kept as a separate name for
+ * call-site readability — `backcast(...)` reads as "what I need now",
+ * `targetAtAge(...)` reads as "the trajectory's value at age X".
+ */
 export function targetAtAge(
-  baseValueAt100: number,
+  targetValue: number,
   age: number,
+  targetAge: number,
   activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL
 ): number {
   const retention = retentionFor(activityLevel);
-  const decadesFrom100 = (100 - age) / 10;
-  return baseValueAt100 / Math.pow(retention, decadesFrom100);
+  const decadesFromTarget = (targetAge - age) / 10;
+  return targetValue / Math.pow(retention, decadesFromTarget);
 }

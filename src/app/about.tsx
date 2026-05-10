@@ -65,9 +65,11 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>How the math works</Text>
           <Text style={styles.body}>
-            This app uses Peter Attia's Centenarian Decathlon target values at age 100, then
-            backcasts using a compound decline rate that depends on the activity level you chose
-            during onboarding:
+            This app uses Peter Attia's Centenarian Decathlon thresholds — the strength and
+            fitness levels Attia argues are needed for an independent old age. You pick when
+            you want to still be capable of those thresholds (age 70, 80, 90, or 100), and the
+            app backcasts using a compound decline rate that depends on the activity level you
+            chose during onboarding:
           </Text>
           <Text style={styles.body}>
             • <Text style={styles.bodyEmphasis}>Active: 8% per decade.</Text> Aligns with research
