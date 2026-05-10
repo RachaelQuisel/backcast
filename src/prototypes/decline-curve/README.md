@@ -50,6 +50,13 @@ warning line.
 - `cli.ts` — throwaway TUI shell. Imports `EXERCISES`, `backcast`,
   `targetAtAge` from `../../constants/exercises`. Delete after the question
   is answered.
+- `verify.ts` — minimal proof script. `npx tsx verify.ts` prints `backcast()`
+  for four target ages so you can eyeball that the fix actually moves the
+  number.
+- `dashboard-test.py` — Playwright script that drives the live dashboard
+  with mocked Supabase (auth + profile fetch). Run from the project root
+  with the dev server up on :8082: `python3 src/prototypes/decline-curve/dashboard-test.py`.
+- `screenshots/` — full-page captures from the test run, one per target age.
 
 The math module itself (`src/constants/exercises.ts`) is **not** part of the
 prototype — it's the real code being tested.
