@@ -116,7 +116,7 @@ def run_for_target(target_age: int, expected: float) -> tuple[float | None, str]
         page.on("pageerror", lambda err: print(f"  [pageerror] {err}", file=sys.stderr))
 
         page.route("**/*", make_routes(target_age))
-        page.goto("http://localhost:8082", wait_until="domcontentloaded", timeout=60000)
+        page.goto("http://localhost:8081", wait_until="domcontentloaded", timeout=60000)
         page.wait_for_load_state("networkidle", timeout=30000)
         page.wait_for_timeout(2000)
 

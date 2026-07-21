@@ -3,8 +3,9 @@
 Build the exercise banner GIFs in assets/exercises/.
 
 Sources:
-- Free Exercise DB (github.com/yuhonas/free-exercise-db, MIT license):
-  2-frame JPGs per exercise. Composed into an animated GIF at 500ms/frame.
+- Free Exercise DB (github.com/yuhonas/free-exercise-db, Unlicense /
+  public domain): 2-frame JPGs per exercise. Composed into an animated
+  GIF at 500ms/frame.
 - Wikimedia Commons (public domain U.S. military photos): still images
   converted to single-frame GIFs for format consistency with the animated
   banners.
@@ -29,7 +30,7 @@ REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 ASSETS = REPO_ROOT / 'assets' / 'exercises'
 CACHE = REPO_ROOT / '.cache' / 'exercise-source-frames'
 
-# Free Exercise DB — animated 2-frame GIFs
+# Free Exercise DB — animated 2-frame GIFs (Unlicense / public domain)
 FREE_EXERCISE_DB = {
     'ohp':          'Standing_Military_Press',
     'farmers-walk': 'Farmers_Walk',

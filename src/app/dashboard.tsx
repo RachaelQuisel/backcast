@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
@@ -178,12 +179,20 @@ export default function Dashboard() {
                 }
               }}
             >
-              <Image
-                source={exerciseImage(exercise.id)}
-                style={styles.exerciseBanner}
-                resizeMode="cover"
-                accessibilityLabel={exercise.name}
-              />
+              <View style={styles.exerciseBannerWrap}>
+                <Image
+                  source={exerciseImage(exercise.id)}
+                  style={styles.exerciseBanner}
+                  resizeMode="cover"
+                  accessibilityLabel={exercise.name}
+                />
+                <LinearGradient
+                  colors={['rgba(21,21,32,0)', 'rgba(21,21,32,0.85)', 'rgba(21,21,32,1)']}
+                  locations={[0, 0.65, 1]}
+                  style={styles.exerciseBannerFade}
+                  pointerEvents="none"
+                />
+              </View>
               <View style={styles.exerciseBody}>
               <View style={styles.exerciseHeader}>
                 <Text style={styles.exerciseName}>{exercise.name}</Text>
@@ -515,10 +524,22 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     overflow: 'hidden',
   },
+  exerciseBannerWrap: {
+    position: 'relative',
+    width: '100%',
+    height: 110,
+    backgroundColor: '#0A0A0F',
+  },
   exerciseBanner: {
     width: '100%',
-    height: 140,
-    backgroundColor: '#0A0A0F',
+    height: '100%',
+  },
+  exerciseBannerFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '55%',
   },
   exerciseBody: {
     padding: 20,

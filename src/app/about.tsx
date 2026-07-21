@@ -135,12 +135,16 @@ export default function About() {
             >
               Free Exercise DB
             </Text>{' '}
-            (MIT license).
+            (Unlicense / public domain).
           </Text>
           <Text style={styles.body}>
             Tread Water and VO2 Max photos are U.S. military public-domain
             images from Wikimedia Commons — Staff Sgt. Mike Meares (U.S. Air
             Force, 2012) and Cpl. William Smith (U.S. Army, 2013), respectively.
+          </Text>
+          <Text style={styles.body}>
+            Full license text and canonical source URLs live in
+            LICENSES-thirdparty.md in the repository.
           </Text>
         </View>
 
