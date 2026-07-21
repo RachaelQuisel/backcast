@@ -125,6 +125,26 @@ export default function About() {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Image credits</Text>
+          <Text style={styles.body}>
+            Exercise animations for Overhead Press, Farmer's Walk, Dead Lift,
+            Turkish Get-Up, and Front Squat come from{' '}
+            <Text
+              style={styles.sourceText}
+              onPress={() => Linking.openURL('https://github.com/yuhonas/free-exercise-db')}
+            >
+              Free Exercise DB
+            </Text>{' '}
+            (MIT license).
+          </Text>
+          <Text style={styles.body}>
+            Tread Water and VO2 Max photos are U.S. military public-domain
+            images from Wikimedia Commons — Staff Sgt. Mike Meares (U.S. Air
+            Force) and Pfc. Andrew Ingram (U.S. Army), respectively.
+          </Text>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>The backcasting philosophy</Text>
           <Text style={styles.quote}>
             "What do you want your body to function like the day before you take your last

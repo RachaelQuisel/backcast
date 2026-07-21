@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, TextInput } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
@@ -10,6 +10,7 @@ import {
   defaultTargetAt,
   minTargetAt,
 } from '@/constants/exercises';
+import { EXERCISE_IMAGES } from '@/constants/exercise-images';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -177,6 +178,13 @@ export default function Dashboard() {
                 }
               }}
             >
+              <Image
+                source={EXERCISE_IMAGES[exercise.id]}
+                style={styles.exerciseBanner}
+                resizeMode="cover"
+                accessibilityLabel={exercise.name}
+              />
+              <View style={styles.exerciseBody}>
               <View style={styles.exerciseHeader}>
                 <Text style={styles.exerciseName}>{exercise.name}</Text>
                 <Text style={styles.exerciseActivity}>{exercise.description}</Text>
@@ -290,6 +298,7 @@ export default function Dashboard() {
               {!isEditing && progress === null && (
                 <Text style={styles.logPrompt}>Tap to log your current level</Text>
               )}
+              </View>
             </Pressable>
           );
         })}
@@ -503,8 +512,16 @@ const styles = StyleSheet.create({
   exerciseCard: {
     backgroundColor: '#151520',
     borderRadius: 16,
-    padding: 20,
     marginBottom: 12,
+    overflow: 'hidden',
+  },
+  exerciseBanner: {
+    width: '100%',
+    height: 140,
+    backgroundColor: '#0A0A0F',
+  },
+  exerciseBody: {
+    padding: 20,
   },
   exerciseHeader: {
     marginBottom: 16,
