@@ -357,6 +357,7 @@ const styles = StyleSheet.create({
   heroStrip: {
     marginBottom: 32,
     marginHorizontal: -24,
+    alignSelf: 'stretch',
   },
   heroStripContent: {
     paddingHorizontal: 24,
