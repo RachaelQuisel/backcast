@@ -11,6 +11,7 @@ import {
   type Exercise,
   backcast,
   targetAtAge,
+  defaultTargetAt,
 } from '../../constants/exercises';
 
 const BOLD = '\x1b[1m';
@@ -43,8 +44,8 @@ function flag(s: State): string | null {
 function render(s: State): void {
   process.stdout.write('\x1b[2J\x1b[H');
   const ex: Exercise = EXERCISES[s.exerciseIdx];
-  const need = backcast(ex.baseValueAt100, s.currentAge, s.targetAge, s.activity);
-  const atTarget = targetAtAge(ex.baseValueAt100, s.targetAge, s.targetAge, s.activity);
+  const atTarget = defaultTargetAt(ex, s.targetAge, s.activity);
+  const need = backcast(atTarget, s.currentAge, s.targetAge, s.activity);
 
   console.log(`${BOLD}Backcast decline-curve prototype${RESET}`);
   console.log();
@@ -60,10 +61,10 @@ function render(s: State): void {
   const f = flag(s);
   if (f) console.log(`\n  ${RED}${BOLD}⚠ edge case:${RESET} ${RED}${f}${RESET}`);
 
-  // Show the per-decade roadmap
+  // Show the per-decade roadmap, anchored on the value at target age.
   console.log(`\n${DIM}roadmap (every 10 years from current to 100):${RESET}`);
   for (let age = s.currentAge; age <= 100; age += 10) {
-    const v = targetAtAge(ex.baseValueAt100, age, s.targetAge, s.activity);
+    const v = targetAtAge(atTarget, age, s.targetAge, s.activity);
     console.log(`  ${DIM}age ${age}${RESET}  ${v.toFixed(2)} ${ex.unit}`);
   }
 

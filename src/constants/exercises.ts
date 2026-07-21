@@ -1,7 +1,15 @@
 /**
  * Backcast exercise definitions based on Peter Attia's Centenarian Decathlon.
- * Base values are targets at age 100. The app backcasts from these using a
- * compound decline formula whose rate depends on the user's activity level:
+ *
+ * `baseValueAt100` is the capability threshold from Attia's framework — a
+ * level Attia argues is enough to stay independent in old age. The name is
+ * historical (Attia originally anchored it at age 100), but in this app the
+ * threshold is *the same value at whatever age the user commits to*: pick
+ * targetAge=80 and the app treats 30 lb OHP as your goal at 80, not at 100.
+ * `backcast()` then tells you what you need right now to defend that
+ * threshold from currentAge to targetAge.
+ *
+ * Decline rates by activity level:
  *   - active:    8%/decade (Fitzgerald 1997, Wroblewski 2011)
  *   - sedentary: 13%/decade (population averages, Pollock 1997)
  */
@@ -99,26 +107,52 @@ export function retentionFor(activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEV
 }
 
 /**
+ * The default `targetValue` the user commits to at `targetAge`.
+ *
+ * Under this app's model the threshold is age-invariant: whatever your
+ * chosen `targetAge`, the default target is Attia's threshold value.
+ * Kept as a helper so callers stay decoupled from the field name.
+ * `targetAge` and `activityLevel` are unused today but stay in the signature
+ * to make future model changes a one-file edit.
+ */
+export function defaultTargetAt(
+  exercise: Pick<Exercise, 'baseValueAt100'>,
+  _targetAge: number,
+  _activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL
+): number {
+  return exercise.baseValueAt100;
+}
+
+/**
+ * The default minimum target the user is allowed to set at `targetAge`.
+ * Same age-invariance rationale as `defaultTargetAt`.
+ */
+export function minTargetAt(
+  exercise: Pick<Exercise, 'minTargetAt100'>,
+  _targetAge: number,
+  _activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL
+): number {
+  return exercise.minTargetAt100;
+}
+
+/**
  * What you need NOW to hit `targetValue` at `targetAge`.
  *
- * `targetValue` is the capability the user has committed to maintain UNTIL
- * `targetAge` — by default `Exercise.baseValueAt100`, the centenarian-decathlon
- * threshold from Attia's framework. Past the target age, natural decline
- * continues unchecked (this app doesn't model post-target trajectories as
- * a goal — it's a maintenance commitment ending at target age).
+ * `targetValue` is the capability the user has committed to at `targetAge`.
+ * Past the target age, natural decline continues unchecked — this app models
+ * a maintenance commitment ending at target age, not a post-target trajectory.
  *
- * The earlier version of this function took `targetAge` and ignored it:
- * `targetAge` cancelled out algebraically because the threshold was
- * double-anchored at age 100. That contradicted the product narrative
- * ("pick what you want at 80, 90, or 100"). Fixed: `targetValue` is now
- * the value AT `targetAge`, not at 100.
+ * When `targetAge <= currentAge` the horizon has passed; return `targetValue`
+ * unchanged (the commitment stands). Without this clamp the negative
+ * exponent silently prescribes a value *below* the commitment.
  */
 export function backcast(
   targetValue: number,
   currentAge: number,
-  targetAge: number = 80,
+  targetAge: number,
   activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL
 ): number {
+  if (targetAge <= currentAge) return targetValue;
   const retention = retentionFor(activityLevel);
   const decadesRemaining = (targetAge - currentAge) / 10;
   return targetValue / Math.pow(retention, decadesRemaining);
@@ -128,12 +162,12 @@ export function backcast(
  * The value along the user's trajectory at any age.
  *
  * Anchored at `targetValue` at `targetAge`. Pre-target it ramps up (you need
- * more now than at target). Post-target it ramps down (natural decline
- * continues). At `age === targetAge` it equals `targetValue`.
+ * more at younger ages to maintain to target). Post-target it ramps down
+ * (natural decline continues). At `age === targetAge` it equals `targetValue`.
  *
- * Mathematically identical to `backcast`; kept as a separate name for
- * call-site readability — `backcast(...)` reads as "what I need now",
- * `targetAtAge(...)` reads as "the trajectory's value at age X".
+ * Same shape as `backcast` without the past-horizon clamp — this function is
+ * used to plot roadmap points, where "value at age N > targetAge" is a
+ * legitimate projection of continued decline, not a stale commitment.
  */
 export function targetAtAge(
   targetValue: number,

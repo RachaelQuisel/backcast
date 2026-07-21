@@ -3,7 +3,13 @@ import { View, Text, Pressable, StyleSheet, ScrollView, TextInput } from 'react-
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
-import { EXERCISES, backcast, targetAtAge } from '@/constants/exercises';
+import {
+  EXERCISES,
+  backcast,
+  targetAtAge,
+  defaultTargetAt,
+  minTargetAt,
+} from '@/constants/exercises';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -44,7 +50,9 @@ export default function Dashboard() {
     }
   }
 
-  const decadesLeft = ((targetAge - age) / 10).toFixed(1);
+  const decadesLeftNum = Math.max(0, (targetAge - age) / 10);
+  const decadesLeft = decadesLeftNum.toFixed(1);
+  const pastHorizon = decadesLeftNum === 0;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -56,7 +64,9 @@ export default function Dashboard() {
           <View>
             <Text style={styles.appName}>Backcast</Text>
             <Text style={styles.headerSub}>
-              {decadesLeft} decades to build your future self
+              {pastHorizon
+                ? "You're past your target age — update it in settings"
+                : `${decadesLeft} decades to build your future self`}
             </Text>
           </View>
           <Pressable
@@ -131,11 +141,25 @@ export default function Dashboard() {
         {/* Exercise cards */}
         <Text style={styles.sectionTitle}>Your targets right now</Text>
         {activeExercises.map((exercise) => {
-          const effectiveBase = customTargets[exercise.id] ?? exercise.baseValueAt100;
-          const currentTarget = backcast(effectiveBase, age, targetAge, activityLevel);
-          // Under the new semantics `effectiveBase` IS the value at targetAge,
-          // so targetAtGoal === effectiveBase by construction.
-          const targetAtGoal = effectiveBase;
+          const custom = customTargets[exercise.id];
+          // Preserve the user's stored commitment even when the profile's
+          // targetAge / activityLevel has drifted from the stamp — the number
+          // they typed stays visible and drives required-now. The card shows
+          // a warning so the drift is loud, not silent.
+          const isStale =
+            custom !== undefined &&
+            (custom.targetAge !== targetAge || custom.activityLevel !== activityLevel);
+          const effectiveTargetAge = custom ? custom.targetAge : targetAge;
+          const effectiveActivity = custom ? custom.activityLevel : activityLevel;
+          const targetAtGoal = custom
+            ? custom.value
+            : defaultTargetAt(exercise, targetAge, activityLevel);
+          const currentTarget = backcast(
+            targetAtGoal,
+            age,
+            effectiveTargetAge,
+            effectiveActivity
+          );
           const latestLog = latestLogs.get(exercise.id);
           const progress = latestLog ? (latestLog / currentTarget) * 100 : null;
           const isEditing = editingExercise === exercise.id;
@@ -173,7 +197,7 @@ export default function Dashboard() {
                   </Text>
                   <View style={styles.goalLabelRow}>
                     <Text style={styles.targetLabel}>
-                      At {targetAge}
+                      At {effectiveTargetAge}
                     </Text>
                     <Pressable
                       onPress={(e) => {
@@ -212,10 +236,9 @@ export default function Dashboard() {
                         e.stopPropagation();
                         const num = Number(editValue);
                         if (num > 0) {
-                          // The user's input is the value they want at targetAge.
-                          // Under the fixed math, that IS the base value we store —
-                          // no conversion needed.
-                          setCustomTarget(exercise.id, num);
+                          // Stamp targetAge AND activityLevel so a later
+                          // change to either won't silently re-anchor.
+                          setCustomTarget(exercise.id, num, targetAge, activityLevel);
                         }
                         setEditingExercise(null);
                       }}
@@ -224,10 +247,20 @@ export default function Dashboard() {
                     </Pressable>
                   </View>
                   <Text style={styles.editHint}>
-                    Default: {exercise.baseValueAt100.toFixed(0)} ·
-                    Min: {exercise.minTargetAt100.toFixed(0)}
+                    Default: {defaultTargetAt(exercise, targetAge, activityLevel).toFixed(0)} ·
+                    Min: {minTargetAt(exercise, targetAge, activityLevel).toFixed(0)}
                   </Text>
                 </View>
+              )}
+
+              {isStale && custom && !isEditing && (
+                <Text style={styles.staleWarning}>
+                  Set for age {custom.targetAge}
+                  {custom.activityLevel !== activityLevel ? ` (${custom.activityLevel})` : ''}
+                  {' · '}your current is age {targetAge}
+                  {custom.activityLevel !== activityLevel ? ` (${activityLevel})` : ''}
+                  . Tap adjust to update.
+                </Text>
               )}
 
               {!isEditing && progress !== null && (
@@ -275,7 +308,12 @@ export default function Dashboard() {
             ))}
           </View>
           {activeExercises.map((exercise) => {
-            const effectiveBase = customTargets[exercise.id] ?? exercise.baseValueAt100;
+            const custom = customTargets[exercise.id];
+            const effectiveBase = custom
+              ? custom.value
+              : defaultTargetAt(exercise, targetAge, activityLevel);
+            const anchorAge = custom ? custom.targetAge : targetAge;
+            const anchorActivity = custom ? custom.activityLevel : activityLevel;
             return (
               <View key={exercise.id} style={styles.decadeRow}>
                 <Text
@@ -286,7 +324,7 @@ export default function Dashboard() {
                 </Text>
                 {generateDecadeAges(age, targetAge).map((a) => (
                   <Text key={a} style={[styles.decadeCell, styles.decadeValue]}>
-                    {targetAtAge(effectiveBase, a, targetAge, activityLevel).toFixed(0)}
+                    {targetAtAge(effectiveBase, a, anchorAge, anchorActivity).toFixed(0)}
                   </Text>
                 ))}
               </View>
@@ -315,6 +353,7 @@ export default function Dashboard() {
 }
 
 function generateDecadeAges(currentAge: number, targetAge: number): number[] {
+  if (targetAge <= currentAge) return [targetAge];
   const ages: number[] = [];
   // Round current age up to nearest 10
   const startDecade = Math.ceil(currentAge / 10) * 10;
@@ -578,6 +617,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#4A9EFF',
     marginTop: 12,
+  },
+  staleWarning: {
+    fontSize: 12,
+    color: '#FBBF24',
+    marginTop: 12,
+    lineHeight: 18,
   },
   decadeTable: {
     backgroundColor: '#151520',

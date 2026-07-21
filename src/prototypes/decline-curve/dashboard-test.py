@@ -1,7 +1,14 @@
 """
 Drive the backcast dashboard end-to-end with mocked Supabase, asserting that
-the rendered "current target" matches what the fixed backcast() math predicts
-for three different target ages.
+the rendered "current target" matches what backcast() predicts for three
+different target ages.
+
+Each case seeds a custom target for Overhead Press at value 30.2 stamped to
+the case's targetAge — with the stamp matching, dashboard reads the custom
+value and calls backcast(30.2, 35, targetAge, 'active'). This exercises the
+targetAge branch of the math (default targets are targetAge-invariant by
+construction — Attia's age-100 spec projected back to currentAge cancels
+targetAge, so the default path can't drive this test).
 
 Anonymous sign-in is disabled on the user's Supabase project, so we intercept
 the network layer and return canned auth/profile responses instead.
@@ -45,7 +52,8 @@ def make_routes(target_age: int):
             route.fulfill(status=200, content_type="application/json", body=json.dumps(session))
             return
 
-        # Profile fetch — return our seeded profile
+        # Profile fetch — return our seeded profile with a custom OHP target
+        # stamped at the current targetAge so backcast() drives the display.
         if "/rest/v1/profiles" in url and method == "GET":
             profile = [{
                 "id": USER_ID,
@@ -55,7 +63,9 @@ def make_routes(target_age: int):
                 "target_age": target_age,
                 "activity_level": "active",
                 "selected_goals": ["ohp", "deadlift", "vo2max"],
-                "custom_targets": {},
+                "custom_targets": {
+                    "ohp": {"value": 30.2, "targetAge": target_age},
+                },
                 "has_onboarded": True,
             }]
             # maybeSingle expects one row max — return wrapped in array per PostgREST
@@ -84,18 +94,18 @@ def make_routes(target_age: int):
 
 def extract_target_for(page, exercise_name: str) -> float | None:
     """
-    The dashboard renders each exercise card with the exercise name + a numeric
-    'current target' value. Pull that number from the DOM by locating the
-    exercise-name element and walking up to the card.
+    Pull the "Your target now" decimal from the card whose exercise name
+    matches. Anchoring on the labeled row is deliberate — matching "first
+    decimal on card" breaks the moment any earlier decimal appears (a
+    progress %, an edit hint, a log time).
     """
     name_el = page.get_by_text(exercise_name, exact=True).first
     name_el.wait_for(state="visible", timeout=15000)
     card = name_el.locator("xpath=ancestor::*[1]/ancestor::*[1]")
     text = card.inner_text()
-    # Find the first decimal number on the card (the "currentTarget" rendered
-    # via toFixed(1)). Skip integer-only matches.
-    matches = re.findall(r"\b(\d+\.\d)\b", text)
-    return float(matches[0]) if matches else None
+    # The value renders on the line ABOVE the label "Your target now (...)".
+    m = re.search(r"(\d+\.\d)\s*[\r\n]+\s*Your target now", text)
+    return float(m.group(1)) if m else None
 
 
 def run_for_target(target_age: int, expected: float) -> tuple[float | None, str]:

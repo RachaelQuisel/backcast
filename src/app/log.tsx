@@ -11,7 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
-import { EXERCISES, backcast } from '@/constants/exercises';
+import { EXERCISES, backcast, defaultTargetAt } from '@/constants/exercises';
 
 export default function Log() {
   const { exerciseId } = useLocalSearchParams<{ exerciseId: string }>();
@@ -23,8 +23,18 @@ export default function Log() {
   const exercise = EXERCISES.find((e) => e.id === exerciseId);
   if (!exercise || !age) return null;
 
-  const effectiveBase = customTargets[exercise.id] ?? exercise.baseValueAt100;
-  const currentTarget = backcast(effectiveBase, age, targetAge, activityLevel);
+  const custom = customTargets[exercise.id];
+  const effectiveBase = custom
+    ? custom.value
+    : defaultTargetAt(exercise, targetAge, activityLevel);
+  const effectiveTargetAge = custom ? custom.targetAge : targetAge;
+  const effectiveActivity = custom ? custom.activityLevel : activityLevel;
+  const currentTarget = backcast(
+    effectiveBase,
+    age,
+    effectiveTargetAge,
+    effectiveActivity
+  );
 
   // Previous logs for this exercise
   const previousLogs = logs
