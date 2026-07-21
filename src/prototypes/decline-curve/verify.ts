@@ -9,8 +9,6 @@ import {
   EXERCISES,
   RETENTION_BY_ACTIVITY,
   backcast,
-  defaultTargetAt,
-  minTargetAt,
   targetAtAge,
 } from '../../constants/exercises';
 
@@ -25,13 +23,6 @@ console.log('backcast(target=65) :', backcast(ohp.baseValueAt100, 35, 65, active
 console.log('backcast(target=80) :', backcast(ohp.baseValueAt100, 35, 80, active).toFixed(4));
 console.log('backcast(target=100):', backcast(ohp.baseValueAt100, 35, 100, active).toFixed(4));
 console.log('backcast(target=120):', backcast(ohp.baseValueAt100, 35, 120, active).toFixed(4));
-
-// Model B: defaultTargetAt is age-invariant identity on baseValueAt100
-eq(defaultTargetAt(ohp, 65, active), ohp.baseValueAt100);
-eq(defaultTargetAt(ohp, 80, active), ohp.baseValueAt100);
-eq(defaultTargetAt(ohp, 100, active), ohp.baseValueAt100);
-eq(defaultTargetAt(ohp, 80, sedentary), ohp.baseValueAt100);
-eq(minTargetAt(ohp, 80, active), ohp.minTargetAt100);
 
 // backcast moves with targetAge — this is the branch's whole point
 const at65 = backcast(ohp.baseValueAt100, 35, 65, active);

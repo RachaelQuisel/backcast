@@ -24,8 +24,22 @@ export const RETENTION_BY_ACTIVITY: Record<ActivityLevel, number> = {
 
 export const DEFAULT_ACTIVITY_LEVEL: ActivityLevel = 'active';
 
+/**
+ * Literal-union of every exercise id. Load-bearing at the type layer: `Exercise.id`
+ * uses it, and `EXERCISE_IMAGES` in `exercise-images.ts` is `Record<ExerciseId, ...>`
+ * so a new exercise without a matching image is a compile error, not a runtime one.
+ */
+export type ExerciseId =
+  | 'ohp'
+  | 'farmers-walk'
+  | 'deadlift'
+  | 'tgu'
+  | 'front-squat'
+  | 'swim'
+  | 'vo2max';
+
 export interface Exercise {
-  id: string;
+  id: ExerciseId;
   name: string;
   description: string; // the real-life activity
   unit: string;
@@ -36,9 +50,6 @@ export interface Exercise {
   higherIsBetter: boolean;
 }
 
-// Adding an entry here? Also add its banner image to EXERCISE_IMAGES in
-// `exercise-images.ts` — the app crashes at render time with an undefined
-// Image source otherwise.
 export const EXERCISES: Exercise[] = [
   {
     id: 'ohp',
@@ -107,35 +118,6 @@ export const EXERCISES: Exercise[] = [
 
 export function retentionFor(activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL): number {
   return RETENTION_BY_ACTIVITY[activityLevel];
-}
-
-/**
- * The default `targetValue` the user commits to at `targetAge`.
- *
- * Under this app's model the threshold is age-invariant: whatever your
- * chosen `targetAge`, the default target is Attia's threshold value.
- * Kept as a helper so callers stay decoupled from the field name.
- * `targetAge` and `activityLevel` are unused today but stay in the signature
- * to make future model changes a one-file edit.
- */
-export function defaultTargetAt(
-  exercise: Pick<Exercise, 'baseValueAt100'>,
-  _targetAge: number,
-  _activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL
-): number {
-  return exercise.baseValueAt100;
-}
-
-/**
- * The default minimum target the user is allowed to set at `targetAge`.
- * Same age-invariance rationale as `defaultTargetAt`.
- */
-export function minTargetAt(
-  exercise: Pick<Exercise, 'minTargetAt100'>,
-  _targetAge: number,
-  _activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL
-): number {
-  return exercise.minTargetAt100;
 }
 
 /**

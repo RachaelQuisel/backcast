@@ -4,14 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
-import {
-  EXERCISES,
-  backcast,
-  targetAtAge,
-  defaultTargetAt,
-  minTargetAt,
-} from '@/constants/exercises';
-import { exerciseImage } from '@/constants/exercise-images';
+import { EXERCISES, backcast, targetAtAge } from '@/constants/exercises';
+import { EXERCISE_IMAGES } from '@/constants/exercise-images';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -144,24 +138,18 @@ export default function Dashboard() {
         <Text style={styles.sectionTitle}>Your targets right now</Text>
         {activeExercises.map((exercise) => {
           const custom = customTargets[exercise.id];
-          // Preserve the user's stored commitment even when the profile's
-          // targetAge / activityLevel has drifted from the stamp — the number
-          // they typed stays visible and drives required-now. The card shows
-          // a warning so the drift is loud, not silent.
+          // The stored commitment (or the default shaped the same way) drives
+          // required-now. If custom's stamp has drifted from the profile, the
+          // card warns loudly instead of silently re-anchoring.
+          const target = custom ?? {
+            value: exercise.baseValueAt100,
+            targetAge,
+            activityLevel,
+          };
           const isStale =
             custom !== undefined &&
             (custom.targetAge !== targetAge || custom.activityLevel !== activityLevel);
-          const effectiveTargetAge = custom ? custom.targetAge : targetAge;
-          const effectiveActivity = custom ? custom.activityLevel : activityLevel;
-          const targetAtGoal = custom
-            ? custom.value
-            : defaultTargetAt(exercise, targetAge, activityLevel);
-          const currentTarget = backcast(
-            targetAtGoal,
-            age,
-            effectiveTargetAge,
-            effectiveActivity
-          );
+          const currentTarget = backcast(target.value, age, target.targetAge, target.activityLevel);
           const latestLog = latestLogs.get(exercise.id);
           const progress = latestLog ? (latestLog / currentTarget) * 100 : null;
           const isEditing = editingExercise === exercise.id;
@@ -181,7 +169,7 @@ export default function Dashboard() {
             >
               <View style={styles.exerciseBannerWrap}>
                 <Image
-                  source={exerciseImage(exercise.id)}
+                  source={EXERCISE_IMAGES[exercise.id]}
                   style={styles.exerciseBanner}
                   resizeMode="cover"
                   accessibilityLabel={exercise.name}
@@ -210,11 +198,11 @@ export default function Dashboard() {
                 </View>
                 <View style={styles.goalBlock}>
                   <Text style={styles.goalValue}>
-                    {targetAtGoal.toFixed(1)}
+                    {target.value.toFixed(1)}
                   </Text>
                   <View style={styles.goalLabelRow}>
                     <Text style={styles.targetLabel}>
-                      At {effectiveTargetAge}
+                      At {target.targetAge}
                     </Text>
                     <Pressable
                       onPress={(e) => {
@@ -223,7 +211,7 @@ export default function Dashboard() {
                           setEditingExercise(null);
                         } else {
                           setEditingExercise(exercise.id);
-                          setEditValue(targetAtGoal.toFixed(0));
+                          setEditValue(target.value.toFixed(0));
                         }
                       }}
                       hitSlop={8}
@@ -264,8 +252,8 @@ export default function Dashboard() {
                     </Pressable>
                   </View>
                   <Text style={styles.editHint}>
-                    Default: {defaultTargetAt(exercise, targetAge, activityLevel).toFixed(0)} ·
-                    Min: {minTargetAt(exercise, targetAge, activityLevel).toFixed(0)}
+                    Default: {exercise.baseValueAt100.toFixed(0)} ·
+                    Min: {exercise.minTargetAt100.toFixed(0)}
                   </Text>
                 </View>
               )}
@@ -326,12 +314,11 @@ export default function Dashboard() {
             ))}
           </View>
           {activeExercises.map((exercise) => {
-            const custom = customTargets[exercise.id];
-            const effectiveBase = custom
-              ? custom.value
-              : defaultTargetAt(exercise, targetAge, activityLevel);
-            const anchorAge = custom ? custom.targetAge : targetAge;
-            const anchorActivity = custom ? custom.activityLevel : activityLevel;
+            const target = customTargets[exercise.id] ?? {
+              value: exercise.baseValueAt100,
+              targetAge,
+              activityLevel,
+            };
             return (
               <View key={exercise.id} style={styles.decadeRow}>
                 <Text
@@ -342,7 +329,7 @@ export default function Dashboard() {
                 </Text>
                 {generateDecadeAges(age, targetAge).map((a) => (
                   <Text key={a} style={[styles.decadeCell, styles.decadeValue]}>
-                    {targetAtAge(effectiveBase, a, anchorAge, anchorActivity).toFixed(0)}
+                    {targetAtAge(target.value, a, target.targetAge, target.activityLevel).toFixed(0)}
                   </Text>
                 ))}
               </View>

@@ -15,7 +15,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
 import { ActivityLevel, EXERCISES } from '@/constants/exercises';
-import { exerciseImage } from '@/constants/exercise-images';
+import { EXERCISE_IMAGES } from '@/constants/exercise-images';
 
 export default function Onboarding() {
   const router = useRouter();
@@ -80,7 +80,7 @@ export default function Onboarding() {
                 <View key={ex.id} style={styles.heroTile}>
                   <View style={styles.heroTileImageWrap}>
                     <Image
-                      source={exerciseImage(ex.id)}
+                      source={EXERCISE_IMAGES[ex.id]}
                       style={styles.heroTileImage}
                       resizeMode="cover"
                       accessibilityLabel={ex.name}

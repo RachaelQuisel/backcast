@@ -11,7 +11,6 @@ import {
   type Exercise,
   backcast,
   targetAtAge,
-  defaultTargetAt,
 } from '../../constants/exercises';
 
 const BOLD = '\x1b[1m';
@@ -44,7 +43,7 @@ function flag(s: State): string | null {
 function render(s: State): void {
   process.stdout.write('\x1b[2J\x1b[H');
   const ex: Exercise = EXERCISES[s.exerciseIdx];
-  const atTarget = defaultTargetAt(ex, s.targetAge, s.activity);
+  const atTarget = ex.baseValueAt100;
   const need = backcast(atTarget, s.currentAge, s.targetAge, s.activity);
 
   console.log(`${BOLD}Backcast decline-curve prototype${RESET}`);
