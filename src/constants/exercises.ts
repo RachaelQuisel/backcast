@@ -36,6 +36,9 @@ export interface Exercise {
   higherIsBetter: boolean;
 }
 
+// Adding an entry here? Also add its banner image to EXERCISE_IMAGES in
+// `exercise-images.ts` — the app crashes at render time with an undefined
+// Image source otherwise.
 export const EXERCISES: Exercise[] = [
   {
     id: 'ohp',

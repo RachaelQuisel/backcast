@@ -140,7 +140,7 @@ export default function About() {
           <Text style={styles.body}>
             Tread Water and VO2 Max photos are U.S. military public-domain
             images from Wikimedia Commons — Staff Sgt. Mike Meares (U.S. Air
-            Force) and Pfc. Andrew Ingram (U.S. Army), respectively.
+            Force, 2012) and Cpl. William Smith (U.S. Army, 2013), respectively.
           </Text>
         </View>
 

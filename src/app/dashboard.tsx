@@ -10,7 +10,7 @@ import {
   defaultTargetAt,
   minTargetAt,
 } from '@/constants/exercises';
-import { EXERCISE_IMAGES } from '@/constants/exercise-images';
+import { exerciseImage } from '@/constants/exercise-images';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -179,7 +179,7 @@ export default function Dashboard() {
               }}
             >
               <Image
-                source={EXERCISE_IMAGES[exercise.id]}
+                source={exerciseImage(exercise.id)}
                 style={styles.exerciseBanner}
                 resizeMode="cover"
                 accessibilityLabel={exercise.name}
