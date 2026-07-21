@@ -65,9 +65,11 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>How the math works</Text>
           <Text style={styles.body}>
-            This app uses Peter Attia's Centenarian Decathlon target values at age 100, then
-            backcasts using a compound decline rate that depends on the activity level you chose
-            during onboarding:
+            This app uses Peter Attia's Centenarian Decathlon thresholds — the strength and
+            fitness levels Attia argues are needed for an independent old age. You pick when
+            you want to still be capable of those thresholds (age 70, 80, 90, or 100), and the
+            app backcasts using a compound decline rate that depends on the activity level you
+            chose during onboarding:
           </Text>
           <Text style={styles.body}>
             • <Text style={styles.bodyEmphasis}>Active: 8% per decade.</Text> Aligns with research
@@ -120,6 +122,30 @@ export default function About() {
               <Text style={styles.sourceLink}>↗</Text>
             </Pressable>
           ))}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Image credits</Text>
+          <Text style={styles.body}>
+            Exercise animations for Overhead Press, Farmer's Walk, Dead Lift,
+            Turkish Get-Up, and Front Squat come from{' '}
+            <Text
+              style={styles.sourceText}
+              onPress={() => Linking.openURL('https://github.com/yuhonas/free-exercise-db')}
+            >
+              Free Exercise DB
+            </Text>{' '}
+            (Unlicense / public domain).
+          </Text>
+          <Text style={styles.body}>
+            Tread Water and VO2 Max photos are U.S. military public-domain
+            images from Wikimedia Commons — Staff Sgt. Mike Meares (U.S. Air
+            Force, 2012) and Cpl. William Smith (U.S. Army, 2013), respectively.
+          </Text>
+          <Text style={styles.body}>
+            Full license text and canonical source URLs live in
+            LICENSES-thirdparty.md in the repository.
+          </Text>
         </View>
 
         <View style={styles.section}>

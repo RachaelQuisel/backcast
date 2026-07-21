@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, TextInput } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
-import { EXERCISES, backcast, targetAtAge, retentionFor } from '@/constants/exercises';
+import { EXERCISES, backcast, targetAtAge } from '@/constants/exercises';
+import { EXERCISE_IMAGES } from '@/constants/exercise-images';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -44,7 +46,9 @@ export default function Dashboard() {
     }
   }
 
-  const decadesLeft = ((targetAge - age) / 10).toFixed(1);
+  const decadesLeftNum = Math.max(0, (targetAge - age) / 10);
+  const decadesLeft = decadesLeftNum.toFixed(1);
+  const pastHorizon = decadesLeftNum === 0;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -56,7 +60,9 @@ export default function Dashboard() {
           <View>
             <Text style={styles.appName}>Backcast</Text>
             <Text style={styles.headerSub}>
-              {decadesLeft} decades to build your future self
+              {pastHorizon
+                ? "You're past your target age — update it in settings"
+                : `${decadesLeft} decades to build your future self`}
             </Text>
           </View>
           <Pressable
@@ -131,9 +137,19 @@ export default function Dashboard() {
         {/* Exercise cards */}
         <Text style={styles.sectionTitle}>Your targets right now</Text>
         {activeExercises.map((exercise) => {
-          const effectiveBase = customTargets[exercise.id] ?? exercise.baseValueAt100;
-          const currentTarget = backcast(effectiveBase, age, targetAge, activityLevel);
-          const targetAtGoal = targetAtAge(effectiveBase, targetAge, activityLevel);
+          const custom = customTargets[exercise.id];
+          // The stored commitment (or the default shaped the same way) drives
+          // required-now. If custom's stamp has drifted from the profile, the
+          // card warns loudly instead of silently re-anchoring.
+          const target = custom ?? {
+            value: exercise.baseValueAt100,
+            targetAge,
+            activityLevel,
+          };
+          const isStale =
+            custom !== undefined &&
+            (custom.targetAge !== targetAge || custom.activityLevel !== activityLevel);
+          const currentTarget = backcast(target.value, age, target.targetAge, target.activityLevel);
           const latestLog = latestLogs.get(exercise.id);
           const progress = latestLog ? (latestLog / currentTarget) * 100 : null;
           const isEditing = editingExercise === exercise.id;
@@ -151,6 +167,21 @@ export default function Dashboard() {
                 }
               }}
             >
+              <View style={styles.exerciseBannerWrap}>
+                <Image
+                  source={EXERCISE_IMAGES[exercise.id]}
+                  style={styles.exerciseBanner}
+                  resizeMode="cover"
+                  accessibilityLabel={exercise.name}
+                />
+                <LinearGradient
+                  colors={['rgba(21,21,32,0)', 'rgba(21,21,32,0.85)', 'rgba(21,21,32,1)']}
+                  locations={[0, 0.65, 1]}
+                  style={styles.exerciseBannerFade}
+                  pointerEvents="none"
+                />
+              </View>
+              <View style={styles.exerciseBody}>
               <View style={styles.exerciseHeader}>
                 <Text style={styles.exerciseName}>{exercise.name}</Text>
                 <Text style={styles.exerciseActivity}>{exercise.description}</Text>
@@ -167,11 +198,11 @@ export default function Dashboard() {
                 </View>
                 <View style={styles.goalBlock}>
                   <Text style={styles.goalValue}>
-                    {targetAtGoal.toFixed(1)}
+                    {target.value.toFixed(1)}
                   </Text>
                   <View style={styles.goalLabelRow}>
                     <Text style={styles.targetLabel}>
-                      At {targetAge}
+                      At {target.targetAge}
                     </Text>
                     <Pressable
                       onPress={(e) => {
@@ -180,7 +211,7 @@ export default function Dashboard() {
                           setEditingExercise(null);
                         } else {
                           setEditingExercise(exercise.id);
-                          setEditValue(targetAtGoal.toFixed(0));
+                          setEditValue(target.value.toFixed(0));
                         }
                       }}
                       hitSlop={8}
@@ -210,10 +241,9 @@ export default function Dashboard() {
                         e.stopPropagation();
                         const num = Number(editValue);
                         if (num > 0) {
-                          const decadesFromTargetTo100 = (100 - targetAge) / 10;
-                          const newBaseAt100 =
-                            num * Math.pow(retentionFor(activityLevel), decadesFromTargetTo100);
-                          setCustomTarget(exercise.id, newBaseAt100);
+                          // Stamp targetAge AND activityLevel so a later
+                          // change to either won't silently re-anchor.
+                          setCustomTarget(exercise.id, num, targetAge, activityLevel);
                         }
                         setEditingExercise(null);
                       }}
@@ -222,10 +252,20 @@ export default function Dashboard() {
                     </Pressable>
                   </View>
                   <Text style={styles.editHint}>
-                    Default: {targetAtAge(exercise.baseValueAt100, targetAge, activityLevel).toFixed(0)} ·
-                    Min: {targetAtAge(exercise.minTargetAt100, targetAge, activityLevel).toFixed(0)}
+                    Default: {exercise.baseValueAt100.toFixed(0)} ·
+                    Min: {exercise.minTargetAt100.toFixed(0)}
                   </Text>
                 </View>
+              )}
+
+              {isStale && custom && !isEditing && (
+                <Text style={styles.staleWarning}>
+                  Set for age {custom.targetAge}
+                  {custom.activityLevel !== activityLevel ? ` (${custom.activityLevel})` : ''}
+                  {' · '}your current is age {targetAge}
+                  {custom.activityLevel !== activityLevel ? ` (${activityLevel})` : ''}
+                  . Tap adjust to update.
+                </Text>
               )}
 
               {!isEditing && progress !== null && (
@@ -255,6 +295,7 @@ export default function Dashboard() {
               {!isEditing && progress === null && (
                 <Text style={styles.logPrompt}>Tap to log your current level</Text>
               )}
+              </View>
             </Pressable>
           );
         })}
@@ -273,7 +314,11 @@ export default function Dashboard() {
             ))}
           </View>
           {activeExercises.map((exercise) => {
-            const effectiveBase = customTargets[exercise.id] ?? exercise.baseValueAt100;
+            const target = customTargets[exercise.id] ?? {
+              value: exercise.baseValueAt100,
+              targetAge,
+              activityLevel,
+            };
             return (
               <View key={exercise.id} style={styles.decadeRow}>
                 <Text
@@ -284,7 +329,7 @@ export default function Dashboard() {
                 </Text>
                 {generateDecadeAges(age, targetAge).map((a) => (
                   <Text key={a} style={[styles.decadeCell, styles.decadeValue]}>
-                    {targetAtAge(effectiveBase, a, activityLevel).toFixed(0)}
+                    {targetAtAge(target.value, a, target.targetAge, target.activityLevel).toFixed(0)}
                   </Text>
                 ))}
               </View>
@@ -313,6 +358,7 @@ export default function Dashboard() {
 }
 
 function generateDecadeAges(currentAge: number, targetAge: number): number[] {
+  if (targetAge <= currentAge) return [targetAge];
   const ages: number[] = [];
   // Round current age up to nearest 10
   const startDecade = Math.ceil(currentAge / 10) * 10;
@@ -462,8 +508,28 @@ const styles = StyleSheet.create({
   exerciseCard: {
     backgroundColor: '#151520',
     borderRadius: 16,
-    padding: 20,
     marginBottom: 12,
+    overflow: 'hidden',
+  },
+  exerciseBannerWrap: {
+    position: 'relative',
+    width: '100%',
+    height: 110,
+    backgroundColor: '#0A0A0F',
+  },
+  exerciseBanner: {
+    width: '100%',
+    height: '100%',
+  },
+  exerciseBannerFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '55%',
+  },
+  exerciseBody: {
+    padding: 20,
   },
   exerciseHeader: {
     marginBottom: 16,
@@ -576,6 +642,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#4A9EFF',
     marginTop: 12,
+  },
+  staleWarning: {
+    fontSize: 12,
+    color: '#FBBF24',
+    marginTop: 12,
+    lineHeight: 18,
   },
   decadeTable: {
     backgroundColor: '#151520',

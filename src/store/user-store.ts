@@ -1,7 +1,22 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { ensureSession } from '@/lib/auth';
-import { ActivityLevel, DEFAULT_ACTIVITY_LEVEL } from '@/constants/exercises';
+import {
+  ActivityLevel,
+  DEFAULT_ACTIVITY_LEVEL,
+} from '@/constants/exercises';
+
+/**
+ * A user's custom override for one exercise's target-at-targetAge.
+ * `targetAge` and `activityLevel` are stamped at write time so a later change
+ * to either doesn't silently re-anchor the commitment to a new horizon or
+ * a new decline rate.
+ */
+export interface CustomTarget {
+  value: number;
+  targetAge: number;
+  activityLevel: ActivityLevel;
+}
 
 // Dedupes concurrent initialize() calls (e.g. Strict Mode double-mount)
 // so we don't create two anonymous users on first launch.
@@ -18,6 +33,48 @@ function catchSync(label: string, promise: PromiseLike<{ error: { message: strin
       const message = err instanceof Error ? err.message : 'Unknown error';
       console.error(`${label} (exception):`, message);
     });
+}
+
+/**
+ * Legacy `custom_targets` from before the targetAge fix were stored as plain
+ * numbers — under the old code those were normalized to Attia's age-100 form.
+ * New rows store `{value, targetAge, activityLevel}`.
+ *
+ * We stamp legacy entries as `targetAge: 100, activityLevel: current`. This
+ * is the literal meaning of the legacy data (the number IS the age-100
+ * value). If the user's current targetAge or activityLevel differs, the
+ * dashboard's stale-target UX fires and prompts a re-set — no silent
+ * re-anchoring of the commitment to a new horizon.
+ */
+function migrateCustomTargets(
+  raw: unknown,
+  activityLevel: ActivityLevel
+): { customTargets: Record<string, CustomTarget>; migrated: boolean } {
+  if (!raw || typeof raw !== 'object') {
+    return { customTargets: {}, migrated: false };
+  }
+  const out: Record<string, CustomTarget> = {};
+  let migrated = false;
+  for (const [id, entry] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof entry === 'number') {
+      out[id] = { value: entry, targetAge: 100, activityLevel };
+      migrated = true;
+    } else if (
+      entry && typeof entry === 'object' &&
+      typeof (entry as Partial<CustomTarget>).value === 'number' &&
+      typeof (entry as Partial<CustomTarget>).targetAge === 'number'
+    ) {
+      const e = entry as Partial<CustomTarget>;
+      // Add activityLevel stamp to entries stored before that field existed.
+      if (e.activityLevel === 'active' || e.activityLevel === 'sedentary') {
+        out[id] = { value: e.value!, targetAge: e.targetAge!, activityLevel: e.activityLevel };
+      } else {
+        out[id] = { value: e.value!, targetAge: e.targetAge!, activityLevel };
+        migrated = true;
+      }
+    }
+  }
+  return { customTargets: out, migrated };
 }
 
 export interface WorkoutLog {
@@ -43,8 +100,8 @@ interface UserState {
   // Selected goals (exercise IDs the user cares about)
   selectedGoals: string[];
 
-  // Custom targets: exercise ID → user's chosen base value at age 100
-  customTargets: Record<string, number>;
+  // Custom targets: exercise ID → user's chosen value at the stamped targetAge
+  customTargets: Record<string, CustomTarget>;
 
   // Workout logs
   logs: WorkoutLog[];
@@ -61,7 +118,12 @@ interface UserState {
   setActivityLevel: (level: ActivityLevel) => void;
   setSelectedGoals: (goals: string[]) => void;
   toggleGoal: (exerciseId: string) => void;
-  setCustomTarget: (exerciseId: string, valueAt100: number) => void;
+  setCustomTarget: (
+    exerciseId: string,
+    value: number,
+    targetAge: number,
+    activityLevel: ActivityLevel
+  ) => void;
   addLog: (log: Omit<WorkoutLog, 'id'>) => void;
   completeOnboarding: () => void;
   reset: () => void;
@@ -101,16 +163,30 @@ export const useUserStore = create<UserState>((set, get) => ({
           .maybeSingle();
 
         if (profile) {
+          const targetAge = profile.target_age ?? 80;
+          const activityLevel =
+            (profile.activity_level as ActivityLevel) ?? DEFAULT_ACTIVITY_LEVEL;
+          const { customTargets, migrated } = migrateCustomTargets(
+            profile.custom_targets,
+            activityLevel
+          );
           set({
             age: profile.age,
             sex: profile.sex as 'male' | 'female' | null,
             weight: profile.weight,
-            targetAge: profile.target_age ?? 80,
-            activityLevel: (profile.activity_level as ActivityLevel) ?? DEFAULT_ACTIVITY_LEVEL,
+            targetAge,
+            activityLevel,
             selectedGoals: profile.selected_goals ?? [],
-            customTargets: profile.custom_targets ?? {},
+            customTargets,
             hasOnboarded: profile.has_onboarded ?? false,
           });
+
+          if (migrated) {
+            catchSync('Custom-target migration sync', supabase
+              .from('profiles')
+              .update({ custom_targets: customTargets })
+              .eq('id', userId));
+          }
         }
 
         const { data: logs } = await supabase
@@ -209,8 +285,11 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
   },
 
-  setCustomTarget: (exerciseId, valueAt100) => {
-    const updated = { ...get().customTargets, [exerciseId]: valueAt100 };
+  setCustomTarget: (exerciseId, value, targetAge, activityLevel) => {
+    const updated = {
+      ...get().customTargets,
+      [exerciseId]: { value, targetAge, activityLevel },
+    };
     set({ customTargets: updated });
 
     const userId = get().userId;

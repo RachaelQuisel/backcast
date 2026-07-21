@@ -8,11 +8,14 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
-import { ActivityLevel } from '@/constants/exercises';
+import { ActivityLevel, EXERCISES } from '@/constants/exercises';
+import { EXERCISE_IMAGES } from '@/constants/exercise-images';
 
 export default function Onboarding() {
   const router = useRouter();
@@ -66,38 +69,53 @@ export default function Onboarding() {
         keyboardShouldPersistTaps="handled"
       >
         {step === 0 && (
-          <View style={styles.stepContainer}>
+          <View style={[styles.stepContainer, styles.step0Container]}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.heroStripContent}
+              style={styles.heroStrip}
+            >
+              {EXERCISES.map((ex) => (
+                <View key={ex.id} style={styles.heroTile}>
+                  <View style={styles.heroTileImageWrap}>
+                    <Image
+                      source={EXERCISE_IMAGES[ex.id]}
+                      style={styles.heroTileImage}
+                      resizeMode="cover"
+                      accessibilityLabel={ex.name}
+                    />
+                    <LinearGradient
+                      colors={['rgba(10,10,15,0)', 'rgba(10,10,15,0.85)']}
+                      locations={[0.4, 1]}
+                      style={styles.heroTileFade}
+                      pointerEvents="none"
+                    />
+                  </View>
+                  <Text style={styles.heroTileLabel} numberOfLines={1}>
+                    {ex.name}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+
             <Text style={styles.heroTitle}>Backcast</Text>
             <Text style={styles.heroSubtitle}>
-              What do you want your body to be capable of{'\n'}the day before you take your last breath?
+              What do you want your body to be capable of the day before you take your last breath?
             </Text>
-            <Text style={styles.bodyText}>
-              This app uses backcasting — working backwards from the future you want — to show you
-              what your body needs to be doing right now.
+            <Text style={styles.heroBodySmall}>
+              The strength and fitness you need today to be independent at 80.
             </Text>
-            <Text style={styles.bodyText}>
+            <Text style={styles.heroBodySmall}>
               Based on Peter Attia's Centenarian Decathlon framework.
             </Text>
-            <View style={styles.caveatBox}>
-              <Text style={styles.caveatTitle}>A few things to know</Text>
-              <Text style={styles.caveatText}>
-                This app uses 8% per decade decline if you tell it you're active, and 13% if you
-                tell it you're sedentary. The active rate matches research on trained adults
-                (Fitzgerald 1997 found ~5% per decade for VO2 max in trained individuals;
-                Wroblewski 2011 found minimal strength loss in master's athletes through age 81).
-                The sedentary rate matches population averages for adults who don't train.
-              </Text>
-              <Text style={styles.caveatText}>
-                These numbers are a compass, not a GPS. They're guideposts to help you think ahead
-                — not pass/fail grades. Your real curve will have ups, downs, injuries, and life
-                events.
-              </Text>
-              <Text style={styles.caveatText}>
-                This is not medical advice. The creator is not a medical professional. Do your own
-                research and talk to your doctor. This is a tool to motivate and help you think
-                about your future self.
-              </Text>
-            </View>
+            <Pressable
+              onPress={() => router.push('/about')}
+              style={styles.caveatLinkButton}
+              hitSlop={8}
+            >
+              <Text style={styles.caveatLinkText}>Read the science and disclaimers →</Text>
+            </Pressable>
           </View>
         )}
 
@@ -287,17 +305,33 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
+  step0Container: {
+    alignItems: 'center',
+  },
   heroTitle: {
     fontSize: 48,
     fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: 16,
+    textAlign: 'center',
   },
   heroSubtitle: {
     fontSize: 20,
     color: '#B0B4BA',
     lineHeight: 28,
-    marginBottom: 24,
+    marginBottom: 20,
+    textAlign: 'center',
+    alignSelf: 'center',
+    maxWidth: 420,
+  },
+  heroBodySmall: {
+    fontSize: 15,
+    color: '#888',
+    lineHeight: 22,
+    marginBottom: 8,
+    textAlign: 'center',
+    alignSelf: 'center',
+    maxWidth: 420,
   },
   bodyText: {
     fontSize: 16,
@@ -305,27 +339,59 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 12,
   },
-  caveatBox: {
-    marginTop: 20,
-    backgroundColor: '#151520',
-    borderRadius: 12,
-    padding: 20,
+  caveatLinkButton: {
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#2A2A3A',
+    borderColor: '#2A3A5A',
+    backgroundColor: '#1A1F2E',
+    alignSelf: 'center',
   },
-  caveatTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#B0B4BA',
-    marginBottom: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  caveatText: {
+  caveatLinkText: {
     fontSize: 13,
-    color: '#777',
-    lineHeight: 20,
-    marginBottom: 10,
+    color: '#4A9EFF',
+    fontWeight: '600',
+  },
+  heroStrip: {
+    marginBottom: 32,
+    marginHorizontal: -24,
+    alignSelf: 'stretch',
+  },
+  heroStripContent: {
+    paddingHorizontal: 24,
+    gap: 10,
+  },
+  heroTile: {
+    width: 96,
+    alignItems: 'center',
+  },
+  heroTileImageWrap: {
+    width: 96,
+    height: 96,
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: '#151520',
+    position: 'relative',
+  },
+  heroTileImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroTileFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '60%',
+  },
+  heroTileLabel: {
+    marginTop: 8,
+    fontSize: 11,
+    color: '#B0B4BA',
+    textAlign: 'center',
+    fontWeight: '600',
   },
   stepTitle: {
     fontSize: 32,

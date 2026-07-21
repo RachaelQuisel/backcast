@@ -1,92 +1,114 @@
-# Session Handoff — backcast
+# Session Handoff — backcast — 2026-05-10
 
 ## Primary Objective
 
-Get the **backcast** Expo web app deployed publicly with auto-deploy from GitHub, then iteratively improve correctness (decline rate math, activity-level personalization, error handling). Started from a local Expo project with no remote and a freshly-applied Supabase schema.
+Use the new `prototype` skill to flush out a real bug in the backcast app, then ship the fix.
 
 ## What Shipped This Session
 
-### Infrastructure
-- **Supabase MCP server** added to `.mcp.json` (project ref `wtsfnwhwjbytenxnqrkh`)
-- **Supabase agent skills** installed under `.agents/skills/` (`supabase`, `supabase-postgres-best-practices`)
-- **Vercel project** `backcast` (renamed from `dist`) under `xray-team-url` team
-- **GitHub repo** `RachaelQuisel/backcast` (private, personal account — NOT work)
-- **Branch**: `main` (master deleted on local + remote, default branch updated on GitHub)
-- **Auto-deploy**: every push to `main` triggers a Vercel build via `vercel.json` (`buildCommand: "npx expo export -p web"`, `outputDirectory: "dist"`)
-- **Env vars on Vercel (production scope)**: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+### Found a real math bug
+The `backcast()` function in `src/constants/exercises.ts` took a `targetAge`
+parameter that **cancelled out algebraically**. Users picking target age 65 vs
+90 in onboarding got identical "need now" values — contradicting the product
+narrative on `about.tsx` ("Pick the things you want to do at 80 (or 90, or 100)…").
 
-### Live URL
-- Production: https://backcast-ejc2dsudb-xray-team-url.vercel.app (latest deploy URL changes per push; check `npx vercel ls backcast`)
-- Inspector: https://vercel.com/xray-team-url/backcast
+Found via a logic prototype at `src/prototypes/decline-curve/` that drove the
+math by hand through edge cases. Verified the cancellation with a 5-line
+`verify.ts`.
 
-### Code Changes (in commit order)
-1. **Env validation in `src/lib/supabase.ts`** — throws clear errors when `EXPO_PUBLIC_*` vars missing instead of failing inside supabase-js
-2. **Initialize race fix in `src/store/user-store.ts`** — module-scoped `initPromise` dedupes concurrent `initialize()` calls (Strict Mode double-mount could create two anonymous users)
-3. **`addLog` rollback in `src/store/user-store.ts`** — optimistic UI now removes the local entry if the Supabase insert fails
-4. **Decline rate `15% → 8%`** — extracted `DECLINE_RETENTION_PER_DECADE = 0.92` constant, propagated through `backcast()`, `targetAtAge()`, dashboard custom-target conversion, and copy in `onboarding.tsx` + `about.tsx`
-5. **Activity-level personalization** — added `ActivityLevel` type, `RETENTION_BY_ACTIVITY = { active: 0.92, sedentary: 0.87 }`, an onboarding step (now 6 steps total: welcome / age / sex / weight / activity / target age), `setActivityLevel` store action, dashboard inline picker pill, schema column + idempotent migration in `supabase-schema.sql`
-6. **ErrorBoundary** moved from `src/app/error.tsx` (which Expo Router exposed as `/error`) to `src/components/error-boundary.tsx`, re-exported from `src/app/_layout.tsx` as `ErrorBoundary`. Logs `name`, `message`, `stack` internally on mount; user copy stays generic.
+### Shipped the fix
+Branch `fix/backcast-target-age-bug`, **PR #1**: https://github.com/RachaelQuisel/backcast/pull/1
 
-## Decisions Made & Why
+- `src/constants/exercises.ts` — new math: `targetValue` is now the value at
+  `targetAge` (not at age 100). `targetAtAge` gained a `targetAge` arg.
+- `src/app/dashboard.tsx` — updated `targetAtAge` callsites; simplified
+  `targetAtGoal` to just `effectiveBase` (same value by construction now);
+  removed the no-longer-needed at-100 conversion in the custom-target edit
+  handler; dropped unused `retentionFor` import.
+- `src/app/about.tsx` — one paragraph reworded to describe the corrected semantics.
+- `src/app/log.tsx` — no change (signature unchanged).
+- `src/prototypes/decline-curve/` — full prototype + verify script + Playwright
+  UI test + screenshots + README.
+- `package.json` — one new dev script: `prototype:decline`.
 
-- **Decline rate = 8% active / 13% sedentary**: User flagged that VO2 max targets at the prior 15% rate were elite-athlete territory (~79 mL/kg/min for a 41yo). 8% aligns with Fitzgerald 1997 (~5%/decade VO2 in trained adults) and Wroblewski 2011 (minimal strength loss in master's athletes through 81). 13% picked for sedentary based on Pollock 1997 / population averages cited in the project's research notes (`age-related-decline-research.md`, `fitness-backcasting-decline-rates.md`).
-- **Active is the default `activityLevel`**: ensures existing users (if any) see no number changes after the schema migration — only those who explicitly choose "Sedentary" get the 13% curve.
-- **Vercel project named `backcast`, not `dist`**: initial deploy ran from `dist/` folder so Vercel inferred the project name; renamed via `vercel project rename` rather than redeploying.
-- **GitHub repo on RachaelQuisel personal, private**: explicit user instruction — separation from work GitHub.
-- **`master → main`**: per user's terminology preference (stored in memory).
-- **No custom domain**: user confirmed they don't own one; auto-assigned `backcast-*.vercel.app` is fine.
-- **ErrorBoundary lives in `src/components/`**: keeping it under `src/app/` would re-expose it as a navigable `/error` route. Components dir keeps the route table clean.
-- **No Sentry / toast system added**: explicitly noted as out-of-scope follow-ups; user didn't approve those.
+Zero new tsc errors; pre-existing `app-tabs.web.tsx` `/explore` error is
+unrelated and on `main`.
 
-## Outstanding Tasks
+### Verified end-to-end
 
-- [ ] **Supabase migration (CRITICAL — user must run manually)**: in the Supabase SQL editor, run:
-  ```sql
-  alter table profiles add column if not exists activity_level text default 'active'
-    check (activity_level in ('active', 'sedentary'));
-  ```
-  Without this, the activity-level choice still works locally (and the dashboard pill recalculates the math) but every profile sync logs a `column "activity_level" does not exist` error to console.
-- [ ] **Pre-existing TypeScript error**: `src/components/app-tabs.web.tsx:28` references the deleted `/explore` route. Leftover from the Expo starter template; this component isn't actually used by any current route, so it doesn't break the build (Expo bundler doesn't strict-check TS) but it pollutes `tsc --noEmit` output. Either wire it up to a real route or delete `app-tabs.tsx` + `app-tabs.web.tsx`.
-- [ ] **Code review follow-ups** (from the `/review` pass earlier — user only asked to fix the top 3):
-  - **MEDIUM** — `src/app/dashboard.tsx:11`, `src/app/log.tsx:20` use `useUserStore()` without selectors → re-renders on every unrelated state change. Switch to per-field selectors or `useShallow`.
-  - **MEDIUM** — `src/app/dashboard.tsx:20-35` `latestLogs` is two-pass (first pass is dead work). Single-pass max-by-date grouping.
-  - **MEDIUM** — `src/app/goals.tsx:19-24` `handleContinue` calls `setSelectedGoals` then immediately `router.replace`; can flicker.
-  - **MEDIUM** — Storage adapter in `src/lib/supabase.ts:31-43` silently no-ops `setItem`/`removeItem` during SSR. At minimum, log a one-time warning.
-  - **HIGH (deferred)** — Anonymous auth has no upgrade path to email/password. If user wipes device, all data is gone. Out of scope for MVP.
-  - **HIGH (deferred)** — `reset()` in `user-store.ts` deletes all profile + workout_logs from Supabase with no in-function confirmation. Add a confirm token argument or rename to `dangerouslyResetAllData`.
-  - **LOW** — UI/schema bound mismatches (UI caps age `< 100` and target `<= 100`; schema allows 120). Pick one source of truth.
-  - **LOW** — Pressable-inside-Pressable with `stopPropagation` in `dashboard.tsx:120-133` is a smell.
-- [ ] **vibe-safe-errors deferred items**:
-  - Add Sentry (or similar) so console errors aren't lost on refresh in production.
-  - Add a toast system so sync failures (`addLog` rollback, profile sync errors) surface to the user.
-  - Validate `profile.activity_level` from DB at the boundary (currently cast w/o runtime check).
-- [ ] **`useMemo` on `generateDecadeAges`** in `dashboard.tsx:259` — small perf nit; called twice per render.
+| target age | rendered "need now" (OHP) | math predicts |
+|---|---|---|
+| 65 | 38.8 | 38.78 |
+| 80 | 44.0 | 43.95 |
+| 90 | 47.8 | 47.77 |
 
-## Useful Commands
+Live UI verified via Playwright (`src/prototypes/decline-curve/dashboard-test.py`)
+against `expo start --web` with mocked Supabase responses.
 
-```bash
-# Dev server
-cd /Users/rachaelquisel/Claude-work/projects/backcast && npx expo start --web
+## Decisions Made
 
-# Local web build (what Vercel does)
-npx expo export -p web
+- **Interpretation of `backcast()`'s intent:** Treat `targetValue` (Attia's
+  centenarian-decathlon thresholds) as the capability the user commits to
+  maintain *until* their target age. Past target age, natural decline
+  continues unchecked. **Why:** Matches the about.tsx narrative ("pick the
+  things you want to do at 80 / 90 / 100"). The alternative — treating
+  thresholds as anchored at age 100 forever — was the buggy original behavior
+  and contradicted the product copy.
+- **Did NOT rename `Exercise.baseValueAt100`** to something semantically
+  neutral (e.g. `centenarianThreshold`). **Why:** Touches the user-store
+  schema and every exercise definition; out of scope for a math fix.
+- **Did NOT add input guards** for `targetAge < currentAge` /
+  `currentAge > 100` in the math layer. **Why:** Onboarding already
+  restricts targetAge to 70–100 via UI chips. Defensive guards in the math
+  layer are a separate hardening pass.
+- **Pushed branch + opened PR; did NOT push to `main`.** **Why:** Production
+  deploy without review is a shared-state action requiring explicit ok.
+- **Did NOT modify Vercel Preview env vars.** Tried to (would have made the
+  PR's Vercel preview build succeed); user denied — correctly. Modifying
+  shared infrastructure config wasn't authorized.
 
-# Check latest deploys
-npx vercel ls backcast
+## Outstanding Tasks (in priority order)
 
-# Deploy logs for a specific deploy
-npx vercel inspect <deploy-url> --logs
+- [ ] **Re-enable anonymous sign-in in Supabase** (Dashboard → Auth → Providers
+  → Anonymous). Required to test the live app at all.
+- [ ] **Add Supabase env vars to Vercel Preview scope** so PR previews build.
+  Currently only Production has them. (`vercel env add`, scope = Preview).
+- [ ] **Manual QA on the fix.** Locally (`npm run web`) once anon sign-in is
+  on: onboard with target=65, clear localStorage, onboard with target=90,
+  confirm "your target now" moves between runs. Also exercise the "adjust"
+  custom-target flow — the storage semantics changed (input is now stored
+  directly as the at-target value, no back-conversion).
+- [ ] **Review and merge PR #1** — https://github.com/RachaelQuisel/backcast/pull/1
+- [ ] (follow-up issue) Add input guards in `onboarding.tsx` / math layer for
+  `targetAge < currentAge`, `currentAge > 100`, `targetAge > 100`.
+- [ ] (follow-up issue) Rename `Exercise.baseValueAt100` →
+  `centenarianThreshold` (or similar) for semantic clarity.
+- [ ] (follow-up issue) Drop the dead `higherIsBetter` flag from `Exercise`,
+  or document it as UI-only (currently unused in math).
 
-# Manage env vars
-npx vercel env ls
-npx vercel env add NAME production
+## Where things live
 
-# Type check (one pre-existing /explore error noted above)
-npx tsc --noEmit
-```
+- **Prototype skill** that found the bug: `~/.claude/skills/prototype/` (also
+  pushed to `RachaelQuisel/Skills/prototype/` on GitHub).
+- **The prototype + tests** for backcast math: `src/prototypes/decline-curve/`
+  in this repo. Includes `cli.ts` (TUI), `verify.ts` (math proof),
+  `dashboard-test.py` (Playwright UI test), `screenshots/`, and a README
+  with the full verdict.
+- **Branch**: `fix/backcast-target-age-bug` (pushed, PR open).
+- **Test artifact from skill validation**: `~/Claude-work/prototype-test/subscription-states/`
+  — separate from this repo, can delete or keep as a reference example
+  of the prototype skill's LOGIC branch.
 
 ## Continue Prompt
 
-Please copy and paste the following prompt into your next session:
+Please copy and paste the following into your next session:
 
-> **PROMPT**: "Please read `/Users/rachaelquisel/Claude-work/projects/backcast/session_handoff.md`. We are working on the **backcast** Expo + Supabase + Vercel app. Pick up exactly where we left off — first confirm I've run the `activity_level` Supabase migration (SQL in the Outstanding Tasks section), then we can either tackle the deferred code-review items or move on to a new feature, my choice."
+> **PROMPT**: "Read `session_handoff.md`. We were testing the new `prototype`
+> skill on the backcast app and found a real math bug in `backcast()` —
+> `targetAge` was algebraically cancelling out. The fix is committed and
+> pushed on branch `fix/backcast-target-age-bug` (PR #1) but unmerged. The
+> first thing I need before manual QA is to re-enable anonymous sign-in
+> in Supabase (Dashboard → Auth → Providers → Anonymous). Once that's on,
+> walk me through the manual QA checklist in the handoff. After that, help
+> me decide whether to merge the PR as-is or split out the follow-up
+> hardening work into separate issues first."

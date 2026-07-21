@@ -23,8 +23,12 @@ export default function Log() {
   const exercise = EXERCISES.find((e) => e.id === exerciseId);
   if (!exercise || !age) return null;
 
-  const effectiveBase = customTargets[exercise.id] ?? exercise.baseValueAt100;
-  const currentTarget = backcast(effectiveBase, age, targetAge, activityLevel);
+  const target = customTargets[exercise.id] ?? {
+    value: exercise.baseValueAt100,
+    targetAge,
+    activityLevel,
+  };
+  const currentTarget = backcast(target.value, age, target.targetAge, target.activityLevel);
 
   // Previous logs for this exercise
   const previousLogs = logs
