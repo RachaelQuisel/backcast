@@ -7,11 +7,13 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
 import { EXERCISES, backcast } from '@/constants/exercises';
+import { EXERCISE_IMAGES } from '@/constants/exercise-images';
 
 export default function Log() {
   const { exerciseId } = useLocalSearchParams<{ exerciseId: string }>();
@@ -64,8 +66,18 @@ export default function Log() {
         </Pressable>
 
         <View style={styles.main}>
-          <Text style={styles.exerciseName}>{exercise.name}</Text>
-          <Text style={styles.activityDesc}>{exercise.description}</Text>
+          <View style={styles.exerciseHeader}>
+            <Image
+              source={EXERCISE_IMAGES[exercise.id]}
+              style={styles.exerciseThumb}
+              resizeMode="cover"
+              accessibilityLabel={exercise.name}
+            />
+            <View style={styles.exerciseHeaderText}>
+              <Text style={styles.exerciseName}>{exercise.name}</Text>
+              <Text style={styles.activityDesc}>{exercise.description}</Text>
+            </View>
+          </View>
 
           <View style={styles.targetInfo}>
             <Text style={styles.targetLabel}>Your target right now</Text>
@@ -165,16 +177,31 @@ const styles = StyleSheet.create({
   main: {
     flex: 1,
   },
+  exerciseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginBottom: 32,
+  },
+  exerciseHeaderText: {
+    flex: 1,
+    minWidth: 0,
+  },
+  exerciseThumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    backgroundColor: '#151520',
+  },
   exerciseName: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: 4,
   },
   activityDesc: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#666',
-    marginBottom: 32,
   },
   targetInfo: {
     backgroundColor: '#151520',

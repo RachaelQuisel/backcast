@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Image } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
@@ -167,24 +166,17 @@ export default function Dashboard() {
                 }
               }}
             >
-              <View style={styles.exerciseBannerWrap}>
+              <View style={styles.exerciseHeader}>
                 <Image
                   source={EXERCISE_IMAGES[exercise.id]}
-                  style={styles.exerciseBanner}
+                  style={styles.exerciseThumb}
                   resizeMode="cover"
                   accessibilityLabel={exercise.name}
                 />
-                <LinearGradient
-                  colors={['rgba(21,21,32,0)', 'rgba(21,21,32,0.85)', 'rgba(21,21,32,1)']}
-                  locations={[0, 0.65, 1]}
-                  style={styles.exerciseBannerFade}
-                  pointerEvents="none"
-                />
-              </View>
-              <View style={styles.exerciseBody}>
-              <View style={styles.exerciseHeader}>
-                <Text style={styles.exerciseName}>{exercise.name}</Text>
-                <Text style={styles.exerciseActivity}>{exercise.description}</Text>
+                <View style={styles.exerciseHeaderText}>
+                  <Text style={styles.exerciseName}>{exercise.name}</Text>
+                  <Text style={styles.exerciseActivity}>{exercise.description}</Text>
+                </View>
               </View>
 
               <View style={styles.targetRow}>
@@ -295,7 +287,6 @@ export default function Dashboard() {
               {!isEditing && progress === null && (
                 <Text style={styles.logPrompt}>Tap to log your current level</Text>
               )}
-              </View>
             </Pressable>
           );
         })}
@@ -509,30 +500,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#151520',
     borderRadius: 16,
     marginBottom: 12,
-    overflow: 'hidden',
-  },
-  exerciseBannerWrap: {
-    position: 'relative',
-    width: '100%',
-    height: 110,
-    backgroundColor: '#0A0A0F',
-  },
-  exerciseBanner: {
-    width: '100%',
-    height: '100%',
-  },
-  exerciseBannerFade: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: '55%',
-  },
-  exerciseBody: {
     padding: 20,
   },
   exerciseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 16,
+    gap: 14,
+  },
+  exerciseHeaderText: {
+    flex: 1,
+    minWidth: 0,
+  },
+  exerciseThumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    backgroundColor: '#0A0A0F',
   },
   exerciseName: {
     fontSize: 18,
