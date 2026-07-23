@@ -66,15 +66,15 @@ export default function Log() {
         </Pressable>
 
         <View style={styles.main}>
+          {EXERCISE_IMAGES[exercise.id] && (
+            <Image
+              source={EXERCISE_IMAGES[exercise.id]}
+              style={styles.exerciseBanner}
+              resizeMode="cover"
+              accessibilityLabel={exercise.name}
+            />
+          )}
           <View style={styles.exerciseHeader}>
-            {EXERCISE_IMAGES[exercise.id] && (
-              <Image
-                source={EXERCISE_IMAGES[exercise.id]}
-                style={styles.exerciseThumb}
-                resizeMode="cover"
-                accessibilityLabel={exercise.name}
-              />
-            )}
             <View style={styles.exerciseHeaderText}>
               <Text style={styles.exerciseName}>{exercise.name}</Text>
               <Text style={styles.activityDesc}>{exercise.description}</Text>
@@ -189,10 +189,11 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
-  exerciseThumb: {
-    width: 96,
-    height: 96,
+  exerciseBanner: {
+    width: '100%',
+    height: 220,
     borderRadius: 12,
+    marginBottom: 16,
     backgroundColor: '#151520',
   },
   exerciseName: {

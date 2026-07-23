@@ -127,12 +127,16 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Image credits</Text>
           <Text style={styles.body}>
-            Exercise photos come from Wikimedia Commons. Overhead Press and
-            Farmer's Walk are U.S. military public-domain photos by Airman
-            1st Class Jovante Johnson (U.S. Air Force) and Lance Cpl. David
-            N. Hersey (U.S. Marine Corps). Dead Lift is by mark sebastian
-            (CC BY-SA 2.0). Turkish Get-Up is by Nenad Stojkovic (CC BY
-            2.0). Front Squat is by Simon Q (CC BY 2.0).
+            Exercise animations are cut from stock videos on{' '}
+            <Text
+              style={styles.sourceText}
+              onPress={() => Linking.openURL('https://www.pexels.com')}
+            >
+              Pexels
+            </Text>
+            , whose license allows free use and modification without
+            attribution. Source links for each clip live in
+            LICENSES-thirdparty.md in the repository.
           </Text>
           <Text style={styles.body}>
             Full license text and canonical source URLs live in

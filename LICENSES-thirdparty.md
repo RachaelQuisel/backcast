@@ -1,46 +1,35 @@
 # Third-party asset licenses
 
-This app bundles five exercise banner images under `assets/exercises/`, all
-sourced from Wikimedia Commons and all showing women performing the exercise.
-Two are public domain; two are CC BY 2.0 and one is CC BY-SA 2.0, which
-require the attribution given below (also shown in `src/app/about.tsx`).
+This app bundles five animated exercise GIFs under `assets/exercises/`, each
+derived from a Pexels stock video of a woman performing the exercise. The
+Pexels license (<https://www.pexels.com/license/>) permits free use and
+modification, commercial or not, with no attribution required. Credits are
+given anyway, here and in `src/app/about.tsx`.
 
 Swim (tread water) and VO2 max have no bundled image (decided 2026-07-23).
 
-## Wikimedia Commons (U.S. military, public domain)
+Each GIF is a short looping clip (one rep) cut from the source video,
+resized to 640px wide at 10 fps.
 
-Works produced by U.S. federal employees in the course of their duties are in
-the public domain (17 U.S.C. § 105). Attribution given below is courtesy.
+- `assets/exercises/ohp.gif` — woman pressing a barbell from front rack to
+  overhead lockout, dark dramatic gym.
+  <https://www.pexels.com/video/female-lifting-weights-6509537/>
 
-- `assets/exercises/ohp.gif` — Staff Sgt. Patricia West performing a barbell
-  overhead press. Photo by Airman 1st Class Jovante Johnson, U.S. Air Force.
-  <https://commons.wikimedia.org/wiki/File:Watch_me_lift_(5048014).jpg>
+- `assets/exercises/farmers-walk.gif` — woman picking up a dumbbell in each
+  hand (carry grip). Closest female match on Pexels; no walking-carry video
+  of a woman exists there.
+  <https://www.pexels.com/video/woman-doing-lunges-while-carrying-dumbbells-8026521/>
 
-- `assets/exercises/farmers-walk.gif` — Leane M. Hensley carrying ammo cans
-  during a Jane Wayne Day event, 2014-09-30. Photo by Lance Cpl. David N.
-  Hersey, U.S. Marine Corps.
-  <https://commons.wikimedia.org/wiki/File:2-8_hosts_Jane_Wayne_Day_140930-M-SD875-583.jpg>
+- `assets/exercises/deadlift.gif` — woman performing a barbell deadlift,
+  full side view, industrial gym.
+  <https://www.pexels.com/video/a-woman-lifting-a-barbell-7674502/>
 
-## Wikimedia Commons (CC BY 2.0)
+- `assets/exercises/tgu.gif` — woman raising a kettlebell to full overhead
+  extension. Closest female match on Pexels; no Turkish get-up video of a
+  woman exists there.
+  <https://www.pexels.com/video/a-woman-lifting-a-kettlebell-8893504/>
 
-License text: <https://creativecommons.org/licenses/by/2.0/>. Both images were
-resized and converted to GIF; no other changes.
-
-- `assets/exercises/tgu.gif` — Woman in a kneeling lunge holding a kettlebell
-  overhead. Photo by Nenad Stojkovic, CC BY 2.0.
-  <https://commons.wikimedia.org/wiki/File:Young_blonde_woman_working_out_in_the_gym_while_holding_kettlebell.jpg>
-
-- `assets/exercises/front-squat.gif` — Lidia Valentín in a clean catch
-  (front-rack squat position), London 2012 women's 75 kg weightlifting.
-  Photo by Simon Q, CC BY 2.0.
-  <https://commons.wikimedia.org/wiki/File:Olympics_2012_Women%27s_75kg_Weightlifting.jpg>
-
-## Wikimedia Commons (CC BY-SA 2.0)
-
-License text: <https://creativecommons.org/licenses/by-sa/2.0/>. The image was
-resized and converted to GIF; no other changes. The derived GIF is shared
-under the same CC BY-SA 2.0 license.
-
-- `assets/exercises/deadlift.gif` — Kathy Nguyen performing a deadlift over a
-  Rogue barbell. Photo by mark sebastian, CC BY-SA 2.0.
-  <https://commons.wikimedia.org/wiki/File:Kathy_Nguyen_performing_a_deadlift.jpg>
+- `assets/exercises/front-squat.gif` — woman in a deep squat holding a
+  medicine ball at her chest (goblet form). No barbell front squat by a
+  woman exists on Pexels.
+  <https://www.pexels.com/video/a-woman-squatting-while-carrying-a-fitness-ball-7690493/>
