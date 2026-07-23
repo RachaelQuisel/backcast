@@ -8,14 +8,11 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Image,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
-import { ActivityLevel, EXERCISES } from '@/constants/exercises';
-import { EXERCISE_IMAGES } from '@/constants/exercise-images';
+import { ActivityLevel } from '@/constants/exercises';
 
 export default function Onboarding() {
   const router = useRouter();
@@ -70,35 +67,6 @@ export default function Onboarding() {
       >
         {step === 0 && (
           <View style={[styles.stepContainer, styles.step0Container]}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.heroStripContent}
-              style={styles.heroStrip}
-            >
-              {EXERCISES.map((ex) => (
-                <View key={ex.id} style={styles.heroTile}>
-                  <View style={styles.heroTileImageWrap}>
-                    <Image
-                      source={EXERCISE_IMAGES[ex.id]}
-                      style={styles.heroTileImage}
-                      resizeMode="cover"
-                      accessibilityLabel={ex.name}
-                    />
-                    <LinearGradient
-                      colors={['rgba(10,10,15,0)', 'rgba(10,10,15,0.85)']}
-                      locations={[0.4, 1]}
-                      style={styles.heroTileFade}
-                      pointerEvents="none"
-                    />
-                  </View>
-                  <Text style={styles.heroTileLabel} numberOfLines={1}>
-                    {ex.name}
-                  </Text>
-                </View>
-              ))}
-            </ScrollView>
-
             <Text style={styles.heroTitle}>Backcast</Text>
             <Text style={styles.heroSubtitle}>
               What do you want your body to be capable of the day before you take your last breath?
@@ -109,13 +77,6 @@ export default function Onboarding() {
             <Text style={styles.heroBodySmall}>
               Based on Peter Attia's Centenarian Decathlon framework.
             </Text>
-            <Pressable
-              onPress={() => router.push('/about')}
-              style={styles.caveatLinkButton}
-              hitSlop={8}
-            >
-              <Text style={styles.caveatLinkText}>Read the science and disclaimers →</Text>
-            </Pressable>
           </View>
         )}
 
@@ -307,6 +268,11 @@ const styles = StyleSheet.create({
   },
   step0Container: {
     alignItems: 'center',
+    // Cap width on wide screens so the hero doesn't sprawl across a 1280 px
+    // desktop viewport. On phone this is a no-op (screen < 560).
+    maxWidth: 560,
+    alignSelf: 'center',
+    width: '100%',
   },
   heroTitle: {
     fontSize: 48,
@@ -338,60 +304,6 @@ const styles = StyleSheet.create({
     color: '#888',
     lineHeight: 24,
     marginBottom: 12,
-  },
-  caveatLinkButton: {
-    marginTop: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: '#2A3A5A',
-    backgroundColor: '#1A1F2E',
-    alignSelf: 'center',
-  },
-  caveatLinkText: {
-    fontSize: 13,
-    color: '#4A9EFF',
-    fontWeight: '600',
-  },
-  heroStrip: {
-    marginBottom: 32,
-    marginHorizontal: -24,
-    alignSelf: 'stretch',
-  },
-  heroStripContent: {
-    paddingHorizontal: 24,
-    gap: 10,
-  },
-  heroTile: {
-    width: 96,
-    alignItems: 'center',
-  },
-  heroTileImageWrap: {
-    width: 96,
-    height: 96,
-    borderRadius: 14,
-    overflow: 'hidden',
-    backgroundColor: '#151520',
-    position: 'relative',
-  },
-  heroTileImage: {
-    width: '100%',
-    height: '100%',
-  },
-  heroTileFade: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: '60%',
-  },
-  heroTileLabel: {
-    marginTop: 8,
-    fontSize: 11,
-    color: '#B0B4BA',
-    textAlign: 'center',
-    fontWeight: '600',
   },
   stepTitle: {
     fontSize: 32,
@@ -499,6 +411,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 32,
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 560,
   },
   buttonDisabled: {
     backgroundColor: '#333',
