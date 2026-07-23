@@ -93,3 +93,10 @@ GIFs should be bigger, much higher quality, higher res, and all women (not men).
 ## Licensing note
 
 The deadlift photo is CC BY-SA 2.0 — the derived GIF is shared under the same license (stated in LICENSES-thirdparty.md). The other four are public domain or CC BY 2.0 with attribution given in the About tab.
+
+## Deploy + live verification
+
+- Commit `93597c3` pushed to `main`; Vercel deploy `dpl_HFAnMQNXTMRW4R3LMwhwvN142Ls6` READY (46s build) and aliased to backcasting.app.
+- Live dashboard could NOT be visually verified, for a reason unrelated to this change: **the Supabase project (`wtsfnwhwjbytenxnqrkh.supabase.co`) is paused/unreachable** — DNS does not resolve, and the management API times out. The app's anonymous sign-in fails with "Failed to fetch," so the dashboard renders a black screen for any fresh browser. This predates today; the 2026-05-10 session handoff already listed "re-enable anonymous sign-in in Supabase" as outstanding.
+- **To restore: sign in at supabase.com/dashboard (GitHub auth + captcha — needs Rachael) and restore/unpause project `wtsfnwhwjbytenxnqrkh`.** Free-tier projects paused long enough can require a restore that takes a few minutes.
+- The images themselves were verified pre-commit by opening each built GIF; the Vercel build bundles them via `require()`, so what shipped is exactly what was verified.
