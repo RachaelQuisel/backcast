@@ -1,114 +1,122 @@
-# Session Handoff — backcast — 2026-05-10
+# Session Handoff — 2026-07-22
 
 ## Primary Objective
 
-Use the new `prototype` skill to flush out a real bug in the backcast app, then ship the fix.
+Ship the `fix/backcast-target-age-bug` PR through a code review, then extend
+the branch with:
+- Exercise images (bundle + display on cards)
+- Landing page redesign (kill the wall of text)
+- Dashboard card redesign (kill the sprawl)
+- Vercel deploy env-var setup so preview builds actually succeed
 
-## What Shipped This Session
+Ended blocked on **Vercel Deployment Protection** redirecting every asset
+URL to SSO login, which makes dashboard GIFs appear broken on the preview
+URL even though the code, bundling, and file paths are all correct.
 
-### Found a real math bug
-The `backcast()` function in `src/constants/exercises.ts` took a `targetAge`
-parameter that **cancelled out algebraically**. Users picking target age 65 vs
-90 in onboarding got identical "need now" values — contradicting the product
-narrative on `about.tsx` ("Pick the things you want to do at 80 (or 90, or 100)…").
+## What actually shipped on the branch
 
-Found via a logic prototype at `src/prototypes/decline-curve/` that drove the
-math by hand through edge cases. Verified the cancellation with a 5-line
-`verify.ts`.
+`origin/fix/backcast-target-age-bug` at `942e133`, 7 commits ahead of `main`:
 
-### Shipped the fix
-Branch `fix/backcast-target-age-bug`, **PR #1**: https://github.com/RachaelQuisel/backcast/pull/1
+- **`9222c3a`** — Address code-review findings on the targetAge fix. Lock
+  Model B (baseValueAt100 = threshold at any chosen targetAge, not
+  age-100 anchor). `backcast()` clamps past-horizon. `CustomTarget` gains
+  `{value, targetAge, activityLevel}` shape with legacy-migration on load.
+  Stale-target UX preserves the stored commitment visibly and warns.
+- **`c3ba73b`** — Add 7 exercise banner GIFs to `assets/exercises/`.
+  Sourced from Free Exercise DB (5, Unlicense) + Wikimedia Commons (2,
+  public domain).
+- **`b083b62`** — Rubric-driven revisions on the image commit: real
+  photographer attribution (VO2 max was fabricated), reproducible
+  `scripts/build-exercise-images.py`, type-safe `EXERCISE_IMAGES` via
+  `ExerciseId` literal union in `exercises.ts`.
+- **`3f35e5d`** — Polish: gradient overlay on card banners, bundled
+  `LICENSES-thirdparty.md`, fixed Playwright test port :8082 → :8081,
+  verified end-to-end.
+- **`a4490a9`** — First landing revision (thumbnail strip + Attia
+  subtitle + "Read the science" pill). Later stripped.
+- **`69aa9c9`** — Fix phone: `alignSelf: 'stretch'` on the hero strip so
+  the first tile wasn't clipped.
+- **`f576036`** — Structural code-quality pass. Deleted identity wrappers
+  `defaultTargetAt` / `minTargetAt`, deleted runtime `throw` + wrapper
+  `exerciseImage(id)`, collapsed the custom-target fallback to a single
+  `??` pattern. Net -82 lines.
+- **`911eafd`** — Empty commit to re-trigger Vercel after Preview env
+  vars were added.
+- **`942e133`** — UI pass (this session's last commit). Landing stripped
+  to Backcast + Attia subtitle + Let's go button, capped at maxWidth 560
+  so desktop doesn't sprawl. Dashboard cards: 110-tall banner → 64×64
+  inline thumbnail beside exercise name. Log page: matching 64×64 header
+  thumbnail. Reverted the 4 female-subject Wikimedia photos back to Free
+  Exercise DB illustrations because 3 of 4 didn't depict the actual
+  movement (Jang Miran's clean-and-jerk isn't a deadlift; water polo
+  goalkeeper isn't tread water; static kettlebell hold isn't farmer's
+  walk).
 
-- `src/constants/exercises.ts` — new math: `targetValue` is now the value at
-  `targetAge` (not at age 100). `targetAtAge` gained a `targetAge` arg.
-- `src/app/dashboard.tsx` — updated `targetAtAge` callsites; simplified
-  `targetAtGoal` to just `effectiveBase` (same value by construction now);
-  removed the no-longer-needed at-100 conversion in the custom-target edit
-  handler; dropped unused `retentionFor` import.
-- `src/app/about.tsx` — one paragraph reworded to describe the corrected semantics.
-- `src/app/log.tsx` — no change (signature unchanged).
-- `src/prototypes/decline-curve/` — full prototype + verify script + Playwright
-  UI test + screenshots + README.
-- `package.json` — one new dev script: `prototype:decline`.
+## Decisions made (and why)
 
-Zero new tsc errors; pre-existing `app-tabs.web.tsx` `/explore` error is
-unrelated and on `main`.
+- **Model B locked** — `baseValueAt100` is a threshold the user commits
+  to at their chosen `targetAge`, not an age-100 anchor. The branch's
+  original intent said `targetAge` should move `backcast()`'s result;
+  the alternative reading (scale from age-100 spec) makes `targetAge`
+  cancel out for defaults. Model B matches the About page framing.
+- **`CustomTarget` shape gets `targetAge` + `activityLevel` stamps** — so
+  a later change to either doesn't silently re-anchor the stored
+  commitment. Migration stamps legacy plain-number entries as
+  `targetAge: 100` because that's the literal meaning of the legacy
+  form.
+- **Card design: number is the hero** — 64×64 inline thumbnail beside
+  the exercise name, no more full-width banner. The target number
+  (`44.0`) stays the largest thing on the card by design.
+- **Landing minimalism** — no thumbnail strip, no disclaimers pill.
+  About tab is always one tap away; the landing doesn't need to sell it.
+- **Free Exercise DB > Wikimedia photos for lifts** — visual style
+  consistency across all 7 cards + movement accuracy. Rachael asked for
+  female subjects; Wikimedia's coverage there is poor and the images
+  that exist don't depict the movements. Female representation is on
+  the follow-up list, best sourced from Pexels next time.
+- **Vercel env vars: added Preview scope for `EXPO_PUBLIC_SUPABASE_URL`
+  and `_ANON_KEY`** — Production already had them, Preview didn't, so
+  every preview deployment on the PR branch had been failing until now.
+- **`defaultTargetAt` / `minTargetAt` deleted** — identity wrappers on
+  `exercise.baseValueAt100` / `.minTargetAt100`; misleading signature.
+- **`ExerciseId` literal union in `exercises.ts`** — TypeScript enforces
+  every EXERCISES id has a matching EXERCISE_IMAGES entry at compile
+  time. Replaces the module-load runtime `throw` and the
+  `exerciseImage(id): T | undefined` wrapper.
 
-### Verified end-to-end
+## Outstanding tasks
 
-| target age | rendered "need now" (OHP) | math predicts |
-|---|---|---|
-| 65 | 38.8 | 38.78 |
-| 80 | 44.0 | 43.95 |
-| 90 | 47.8 | 47.77 |
+- [ ] **Dashboard images broken on Vercel preview URL** — cause is
+  Vercel Deployment Protection redirecting `/assets/**` requests to
+  `vercel.com/sso-api`. The GIFs ARE bundled correctly
+  (`dist/assets/assets/exercises/*.gif` after `npx expo export -p web`);
+  it's a Vercel edge behavior. **Three fixes to pick from:**
+  1. **Merge PR #1 to `main`** — production deployment typically
+     bypasses protection. Fastest path; also ships the whole branch.
+  2. Turn off Deployment Protection for Preview in the Vercel project
+     settings (dashboard → Settings → Deployment Protection).
+  3. Visit the preview URL through a Vercel-authenticated session
+     (which Rachael's local browser probably already has, so the images
+     may actually be visible when she's logged into Vercel).
+- [ ] **Female-subject exercise images** — deferred. Wikimedia Commons
+  matches were bad. Next attempt: Pexels (better fitness coverage,
+  per-image license check).
+- [ ] **Post-merge sanity check** — after merge to main, hit the
+  production URL and confirm 7 dashboard cards render with GIF thumbs.
 
-Live UI verified via Playwright (`src/prototypes/decline-curve/dashboard-test.py`)
-against `expo start --web` with mocked Supabase responses.
+## Temporary artifacts reconciled
 
-## Decisions Made
-
-- **Interpretation of `backcast()`'s intent:** Treat `targetValue` (Attia's
-  centenarian-decathlon thresholds) as the capability the user commits to
-  maintain *until* their target age. Past target age, natural decline
-  continues unchecked. **Why:** Matches the about.tsx narrative ("pick the
-  things you want to do at 80 / 90 / 100"). The alternative — treating
-  thresholds as anchored at age 100 forever — was the buggy original behavior
-  and contradicted the product copy.
-- **Did NOT rename `Exercise.baseValueAt100`** to something semantically
-  neutral (e.g. `centenarianThreshold`). **Why:** Touches the user-store
-  schema and every exercise definition; out of scope for a math fix.
-- **Did NOT add input guards** for `targetAge < currentAge` /
-  `currentAge > 100` in the math layer. **Why:** Onboarding already
-  restricts targetAge to 70–100 via UI chips. Defensive guards in the math
-  layer are a separate hardening pass.
-- **Pushed branch + opened PR; did NOT push to `main`.** **Why:** Production
-  deploy without review is a shared-state action requiring explicit ok.
-- **Did NOT modify Vercel Preview env vars.** Tried to (would have made the
-  PR's Vercel preview build succeed); user denied — correctly. Modifying
-  shared infrastructure config wasn't authorized.
-
-## Outstanding Tasks (in priority order)
-
-- [ ] **Re-enable anonymous sign-in in Supabase** (Dashboard → Auth → Providers
-  → Anonymous). Required to test the live app at all.
-- [ ] **Add Supabase env vars to Vercel Preview scope** so PR previews build.
-  Currently only Production has them. (`vercel env add`, scope = Preview).
-- [ ] **Manual QA on the fix.** Locally (`npm run web`) once anon sign-in is
-  on: onboard with target=65, clear localStorage, onboard with target=90,
-  confirm "your target now" moves between runs. Also exercise the "adjust"
-  custom-target flow — the storage semantics changed (input is now stored
-  directly as the at-target value, no back-conversion).
-- [ ] **Review and merge PR #1** — https://github.com/RachaelQuisel/backcast/pull/1
-- [ ] (follow-up issue) Add input guards in `onboarding.tsx` / math layer for
-  `targetAge < currentAge`, `currentAge > 100`, `targetAge > 100`.
-- [ ] (follow-up issue) Rename `Exercise.baseValueAt100` →
-  `centenarianThreshold` (or similar) for semantic clarity.
-- [ ] (follow-up issue) Drop the dead `higherIsBetter` flag from `Exercise`,
-  or document it as UI-only (currently unused in math).
-
-## Where things live
-
-- **Prototype skill** that found the bug: `~/.claude/skills/prototype/` (also
-  pushed to `RachaelQuisel/Skills/prototype/` on GitHub).
-- **The prototype + tests** for backcast math: `src/prototypes/decline-curve/`
-  in this repo. Includes `cli.ts` (TUI), `verify.ts` (math proof),
-  `dashboard-test.py` (Playwright UI test), `screenshots/`, and a README
-  with the full verdict.
-- **Branch**: `fix/backcast-target-age-bug` (pushed, PR open).
-- **Test artifact from skill validation**: `~/Claude-work/prototype-test/subscription-states/`
-  — separate from this repo, can delete or keep as a reference example
-  of the prototype skill's LOGIC branch.
+- Playwright screenshot scripts (`snap_all.py`, `snap_onboarding.py`,
+  `check_deployed.py`, `verify_bypass.py`, `screenshot_deployed_raw.py`,
+  `inspect_deployed.py`) live only in
+  `/private/tmp/claude-501/-Users-rachaelquisel/.../scratchpad/` and can
+  be discarded — nothing there needs to persist.
+- `.cache/exercise-source-frames/` is gitignored; safe to leave.
+- Plan file at `/Users/rachaelquisel/.claude/plans/concurrent-juggling-eclipse.md`
+  captured the last plan pass; historical, not durable.
 
 ## Continue Prompt
 
-Please copy and paste the following into your next session:
+Please copy and paste the following prompt into your next session:
 
-> **PROMPT**: "Read `session_handoff.md`. We were testing the new `prototype`
-> skill on the backcast app and found a real math bug in `backcast()` —
-> `targetAge` was algebraically cancelling out. The fix is committed and
-> pushed on branch `fix/backcast-target-age-bug` (PR #1) but unmerged. The
-> first thing I need before manual QA is to re-enable anonymous sign-in
-> in Supabase (Dashboard → Auth → Providers → Anonymous). Once that's on,
-> walk me through the manual QA checklist in the handoff. After that, help
-> me decide whether to merge the PR as-is or split out the follow-up
-> hardening work into separate issues first."
+> **PROMPT**: "Please read `session_handoff.md` in `~/Claude-Work/PROJECTS/backcast`. We're finishing the `fix/backcast-target-age-bug` PR. The current blocker is that Vercel Deployment Protection is redirecting dashboard image asset URLs to SSO login on preview deployments — the code is right, the bundling is right, it's a Vercel edge behavior. Start by picking one of the three fixes listed under 'Outstanding tasks' (merge to main is the fastest), then confirm the 7 dashboard GIFs render on the resulting URL."
