@@ -127,20 +127,12 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Image credits</Text>
           <Text style={styles.body}>
-            Exercise animations for Overhead Press, Farmer's Walk, Dead Lift,
-            Turkish Get-Up, and Front Squat come from{' '}
-            <Text
-              style={styles.sourceText}
-              onPress={() => Linking.openURL('https://github.com/yuhonas/free-exercise-db')}
-            >
-              Free Exercise DB
-            </Text>{' '}
-            (Unlicense / public domain).
-          </Text>
-          <Text style={styles.body}>
-            Tread Water and VO2 Max photos are U.S. military public-domain
-            images from Wikimedia Commons — Staff Sgt. Mike Meares (U.S. Air
-            Force, 2012) and Cpl. William Smith (U.S. Army, 2013), respectively.
+            Exercise photos come from Wikimedia Commons. Overhead Press and
+            Farmer's Walk are U.S. military public-domain photos by Airman
+            1st Class Jovante Johnson (U.S. Air Force) and Lance Cpl. David
+            N. Hersey (U.S. Marine Corps). Dead Lift is by mark sebastian
+            (CC BY-SA 2.0). Turkish Get-Up is by Nenad Stojkovic (CC BY
+            2.0). Front Squat is by Simon Q (CC BY 2.0).
           </Text>
           <Text style={styles.body}>
             Full license text and canonical source URLs live in

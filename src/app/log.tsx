@@ -67,12 +67,14 @@ export default function Log() {
 
         <View style={styles.main}>
           <View style={styles.exerciseHeader}>
-            <Image
-              source={EXERCISE_IMAGES[exercise.id]}
-              style={styles.exerciseThumb}
-              resizeMode="cover"
-              accessibilityLabel={exercise.name}
-            />
+            {EXERCISE_IMAGES[exercise.id] && (
+              <Image
+                source={EXERCISE_IMAGES[exercise.id]}
+                style={styles.exerciseThumb}
+                resizeMode="cover"
+                accessibilityLabel={exercise.name}
+              />
+            )}
             <View style={styles.exerciseHeaderText}>
               <Text style={styles.exerciseName}>{exercise.name}</Text>
               <Text style={styles.activityDesc}>{exercise.description}</Text>
@@ -188,8 +190,8 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   exerciseThumb: {
-    width: 64,
-    height: 64,
+    width: 96,
+    height: 96,
     borderRadius: 12,
     backgroundColor: '#151520',
   },
