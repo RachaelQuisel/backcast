@@ -94,9 +94,39 @@ GIFs should be bigger, much higher quality, higher res, and all women (not men).
 
 The deadlift photo is CC BY-SA 2.0 — the derived GIF is shared under the same license (stated in LICENSES-thirdparty.md). The other four are public domain or CC BY 2.0 with attribution given in the About tab.
 
+> Superseded same day by Part 3 — the stills below were replaced with real animations a few hours later.
+
 ## Deploy + live verification
 
 - Commit `93597c3` pushed to `main`; Vercel deploy `dpl_HFAnMQNXTMRW4R3LMwhwvN142Ls6` READY (46s build) and aliased to backcasting.app.
 - Live dashboard could NOT be visually verified, for a reason unrelated to this change: **the Supabase project (`wtsfnwhwjbytenxnqrkh.supabase.co`) is paused/unreachable** — DNS does not resolve, and the management API times out. The app's anonymous sign-in fails with "Failed to fetch," so the dashboard renders a black screen for any fresh browser. This predates today; the 2026-05-10 session handoff already listed "re-enable anonymous sign-in in Supabase" as outstanding.
 - **To restore: sign in at supabase.com/dashboard (GitHub auth + captcha — needs Rachael) and restore/unpause project `wtsfnwhwjbytenxnqrkh`.** Free-tier projects paused long enough can require a restore that takes a few minutes.
 - The images themselves were verified pre-commit by opening each built GIF; the Vercel build bundles them via `require()`, so what shipped is exactly what was verified.
+
+---
+
+# Part 3 — Real animations + full-width banners (same day, after feedback)
+
+Feedback on Part 2: "the images are images not gifs, and they're too small."
+
+## What changed (commit `8f4aab5`)
+
+- All five exercise images are now real looping animations — one rep each, 640px wide, 10 fps, 2.9–4.6 MB — cut from Pexels stock videos of women performing each exercise. Pexels license allows use and modification with no attribution (credited anyway in the About tab and LICENSES-thirdparty.md).
+- Dashboard and log cards render the animation as a full-width 220-tall banner above the text, replacing the 96×96 thumbnail.
+- `scripts/build-exercise-images.py` is now the reproducible video-to-GIF pipeline: per-exercise Pexels video id, loop window, optional crop band for vertical sources, hqdn3d denoise + 128-color bayer palette (halved file size on the dark clips). Requires ffmpeg.
+
+## The five clips (all verified by compositing mid-frames from the final GIFs)
+
+| Exercise | Clip | Match |
+|---|---|---|
+| Overhead press | Barbell front rack → overhead lockout, dark gym | Exact |
+| Farmer's walk | Woman picking up a dumbbell in each hand (carry grip) | Fallback — no woman walking-carry video exists on Pexels or Pixabay |
+| Deadlift | Barbell deadlift, full side view, industrial gym | Exact |
+| Turkish get-up | Kettlebell raised to full overhead extension, from behind | Fallback — no woman TGU video exists on either site |
+| Front squat | Deep squat with medicine ball at chest (goblet form) | Fallback — no woman barbell front squat on either site |
+
+The research agent frame-verified ~35 candidate videos this round (several "deadlift"-tagged clips were actually cleans); I re-verified all five final GIFs by extracting composited frames before committing.
+
+## Page-weight note
+
+Five animated GIFs total ~18 MB. Fine on broadband, slow on cellular. If that ever matters, the same clips as looping muted `<video>` (mp4) would be ~10× smaller — a future option, not done now because the ask was GIFs.
