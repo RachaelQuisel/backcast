@@ -170,8 +170,8 @@ export default function Onboarding() {
                   Active
                 </Text>
                 <Text style={styles.activityBody}>
-                  8% decline per decade — research on trained adults (Fitzgerald 1997, Wroblewski
-                  2011).
+                  Strength training 2-3x a week shifts your decline curve back about 15 years —
+                  your body declines like someone 15 years younger.
                 </Text>
               </Pressable>
               <Pressable
@@ -190,8 +190,8 @@ export default function Onboarding() {
                   Sedentary
                 </Text>
                 <Text style={styles.activityBody}>
-                  13% decline per decade — population averages for adults who don't train
-                  regularly.
+                  Average decline without regular training: ~7.5% per decade in your 30s-40s,
+                  ~13.5% in your 50s-60s, ~30% from 70 on.
                 </Text>
               </Pressable>
             </View>

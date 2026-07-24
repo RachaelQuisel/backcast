@@ -9,18 +9,36 @@
  * `backcast()` then tells you what you need right now to defend that
  * threshold from currentAge to targetAge.
  *
- * Decline rates by activity level:
- *   - active:    8%/decade (Fitzgerald 1997, Wroblewski 2011)
- *   - sedentary: 13%/decade (population averages, Pollock 1997)
+ * Decline model (2026-07-23): strength decline accelerates with age. For
+ * average adults WITHOUT regular resistance training, per-decade loss is:
+ *   - under 30:  0% (strength peaks late 20s / early 30s)
+ *   - 30-49:     ~7.5%  (gradual fast-twitch fiber loss, subtle hormonal shifts)
+ *   - 50-69:     ~13.5% (sharper hormonal decline, loss of active motor units)
+ *   - 70+:       ~30%   (steep loss of power, balance, motor-unit recruitment)
+ * Strength falls 2-5x faster than muscle mass — fast-twitch fibers atrophy
+ * first, neural drive weakens, and fat infiltrates muscle tissue — which is
+ * why these rates are steeper than mass-loss numbers.
+ *
+ * 'active' models the documented effect of resistance training 2-3x/week:
+ * functional age shifts back ~15-20 years. We evaluate the same curve at
+ * (age - 15), the conservative end of that range.
  */
 
 export type ActivityLevel = 'active' | 'sedentary';
 
-/** Retention factor per decade (1 - decline rate). */
-export const RETENTION_BY_ACTIVITY: Record<ActivityLevel, number> = {
-  active: 0.92, // 8% decline
-  sedentary: 0.87, // 13% decline
-};
+/**
+ * Per-decade strength loss (fraction) for untrained adults, by the age at
+ * which each bracket begins. Brackets: [30,50), [50,70), [70,∞). Midpoints
+ * of the research ranges (5-10%, 12-15%, 25-35%).
+ */
+export const UNTRAINED_DECLINE_BRACKETS: ReadonlyArray<{ startAge: number; lossPerDecade: number }> = [
+  { startAge: 30, lossPerDecade: 0.075 },
+  { startAge: 50, lossPerDecade: 0.135 },
+  { startAge: 70, lossPerDecade: 0.30 },
+];
+
+/** Years of functional age that regular resistance training buys back. */
+export const ACTIVE_FUNCTIONAL_AGE_SHIFT = 15;
 
 export const DEFAULT_ACTIVITY_LEVEL: ActivityLevel = 'active';
 
@@ -116,8 +134,32 @@ export const EXERCISES: Exercise[] = [
   },
 ];
 
-export function retentionFor(activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL): number {
-  return RETENTION_BY_ACTIVITY[activityLevel];
+/**
+ * Fraction of strength retained from `fromAge` to `toAge` (fromAge < toAge).
+ *
+ * Integrates the bracketed per-decade loss over the age span: each year in a
+ * bracket contributes (1 - loss)^(1/10). For 'active', the whole curve is
+ * evaluated at (age - ACTIVE_FUNCTIONAL_AGE_SHIFT) — training shifts
+ * functional age back, it doesn't change the shape of the curve.
+ */
+export function declineFactor(
+  fromAge: number,
+  toAge: number,
+  activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL
+): number {
+  if (toAge <= fromAge) return 1;
+  const shift = activityLevel === 'active' ? ACTIVE_FUNCTIONAL_AGE_SHIFT : 0;
+  let lnFactor = 0;
+  for (const bracket of UNTRAINED_DECLINE_BRACKETS) {
+    const bracketStart = bracket.startAge + shift;
+    const next = UNTRAINED_DECLINE_BRACKETS.find((b) => b.startAge > bracket.startAge);
+    const bracketEnd = next ? next.startAge + shift : Infinity;
+    const overlap = Math.min(toAge, bracketEnd) - Math.max(fromAge, bracketStart);
+    if (overlap > 0) {
+      lnFactor += (overlap / 10) * Math.log(1 - bracket.lossPerDecade);
+    }
+  }
+  return Math.exp(lnFactor);
 }
 
 /**
@@ -128,8 +170,8 @@ export function retentionFor(activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEV
  * a maintenance commitment ending at target age, not a post-target trajectory.
  *
  * When `targetAge <= currentAge` the horizon has passed; return `targetValue`
- * unchanged (the commitment stands). Without this clamp the negative
- * exponent silently prescribes a value *below* the commitment.
+ * unchanged (the commitment stands). Without this clamp the math would
+ * silently prescribe a value *below* the commitment.
  */
 export function backcast(
   targetValue: number,
@@ -138,9 +180,7 @@ export function backcast(
   activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL
 ): number {
   if (targetAge <= currentAge) return targetValue;
-  const retention = retentionFor(activityLevel);
-  const decadesRemaining = (targetAge - currentAge) / 10;
-  return targetValue / Math.pow(retention, decadesRemaining);
+  return targetValue / declineFactor(currentAge, targetAge, activityLevel);
 }
 
 /**
@@ -150,9 +190,9 @@ export function backcast(
  * more at younger ages to maintain to target). Post-target it ramps down
  * (natural decline continues). At `age === targetAge` it equals `targetValue`.
  *
- * Same shape as `backcast` without the past-horizon clamp — this function is
- * used to plot roadmap points, where "value at age N > targetAge" is a
- * legitimate projection of continued decline, not a stale commitment.
+ * Unlike `backcast` there is no past-horizon clamp — this function plots
+ * roadmap points, where "value at age N > targetAge" is a legitimate
+ * projection of continued decline, not a stale commitment.
  */
 export function targetAtAge(
   targetValue: number,
@@ -160,7 +200,8 @@ export function targetAtAge(
   targetAge: number,
   activityLevel: ActivityLevel = DEFAULT_ACTIVITY_LEVEL
 ): number {
-  const retention = retentionFor(activityLevel);
-  const decadesFromTarget = (targetAge - age) / 10;
-  return targetValue / Math.pow(retention, decadesFromTarget);
+  if (age < targetAge) {
+    return targetValue / declineFactor(age, targetAge, activityLevel);
+  }
+  return targetValue * declineFactor(targetAge, age, activityLevel);
 }

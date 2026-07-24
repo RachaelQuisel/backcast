@@ -68,24 +68,36 @@ export default function About() {
             This app uses Peter Attia's Centenarian Decathlon thresholds — the strength and
             fitness levels Attia argues are needed for an independent old age. You pick when
             you want to still be capable of those thresholds (age 70, 80, 90, or 100), and the
-            app backcasts using a compound decline rate that depends on the activity level you
-            chose during onboarding:
+            app backcasts along an age-dependent decline curve: strength peaks in your late
+            20s to early 30s, then the loss accelerates decade over decade.
           </Text>
           <Text style={styles.body}>
-            • <Text style={styles.bodyEmphasis}>Active: 8% per decade.</Text> Aligns with research
-            on trained adults — Fitzgerald et al. (1997) found ~5% per decade for VO2 max in
-            trained individuals; Wroblewski et al. (2011) found minimal strength loss in master's
-            athletes through age 81.
+            • <Text style={styles.bodyEmphasis}>30s and 40s: ~7.5% per decade.</Text> Gradual
+            loss of fast-twitch muscle fibers and subtle hormonal shifts; usually unnoticed in
+            daily life.
           </Text>
           <Text style={styles.body}>
-            • <Text style={styles.bodyEmphasis}>Sedentary: 13% per decade.</Text> Closer to
-            population averages for adults who don't train regularly (Pollock 1997; sedentary
-            cohorts in Fitzgerald 1997).
+            • <Text style={styles.bodyEmphasis}>50s and 60s: ~13.5% per decade.</Text> Sharper
+            declines in anabolic hormones and loss of active motor units.
           </Text>
           <Text style={styles.body}>
-            If you're not sure which fits you, "active" generally means 150+ minutes a week of
-            moderate exercise, or regular strength training. The targets are guideposts either
-            way — change activity level any time and the math will recalibrate.
+            • <Text style={styles.bodyEmphasis}>70 and beyond: ~30% per decade.</Text> Steep
+            decline in power, balance, and motor-unit recruitment — everyday movements like
+            standing up from a chair start to feel heavier.
+          </Text>
+          <Text style={styles.body}>
+            Those rates are for adults who don't train. Strength falls 2 to 5 times faster
+            than muscle mass — fast-twitch fibers atrophy first, the nervous system gets less
+            efficient at recruiting whole motor units at once, and fat accumulates inside
+            muscle tissue, reducing force per square inch. Muscles that look only slightly
+            smaller can be much weaker.
+          </Text>
+          <Text style={styles.body}>
+            The good news: most of this is disuse, not an unchangeable sentence. Adults who
+            strength train 2-3 times a week build strength at rates similar to younger adults,
+            shifting functional age back 15 to 20 years. Choosing "active" in this app applies
+            that shift — your curve is computed as if you were 15 years younger. Change
+            activity level any time and the math recalibrates.
           </Text>
         </View>
 

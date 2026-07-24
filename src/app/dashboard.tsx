@@ -95,7 +95,7 @@ export default function Dashboard() {
           <View style={styles.activityPillRow}>
             <Text style={styles.activityPillLabel}>Activity level</Text>
             <Text style={styles.activityPillValue}>
-              {activityLevel === 'active' ? 'Active · 8%/decade' : 'Sedentary · 13%/decade'}
+              {activityLevel === 'active' ? 'Active · curve −15 yrs' : 'Sedentary · average curve'}
             </Text>
             <Text style={styles.activityPillChevron}>{activityPickerOpen ? '▲' : '▼'}</Text>
           </View>
@@ -124,7 +124,7 @@ export default function Dashboard() {
                       {level === 'active' ? 'Active' : 'Sedentary'}
                     </Text>
                     <Text style={styles.activityPickerOptionSub}>
-                      {level === 'active' ? '8% decline / decade' : '13% decline / decade'}
+                      {level === 'active' ? 'declines like someone 15 years younger' : '7.5% → 13.5% → 30% per decade with age'}
                     </Text>
                   </Pressable>
                 );

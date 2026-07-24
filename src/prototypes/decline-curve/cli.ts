@@ -6,7 +6,7 @@
 import * as readline from 'node:readline';
 import {
   EXERCISES,
-  RETENTION_BY_ACTIVITY,
+  ACTIVE_FUNCTIONAL_AGE_SHIFT,
   type ActivityLevel,
   type Exercise,
   backcast,
@@ -52,7 +52,7 @@ function render(s: State): void {
   console.log(`  ${BOLD}base @100${RESET}       ${ex.baseValueAt100} ${ex.unit}  ${DIM}min target ${ex.minTargetAt100}${RESET}`);
   console.log(`  ${BOLD}current age${RESET}     ${s.currentAge}`);
   console.log(`  ${BOLD}target age${RESET}      ${s.targetAge}`);
-  console.log(`  ${BOLD}activity${RESET}        ${s.activity}  ${DIM}(retention/decade ${RETENTION_BY_ACTIVITY[s.activity]})${RESET}`);
+  console.log(`  ${BOLD}activity${RESET}        ${s.activity}  ${DIM}(${s.activity === 'active' ? `curve shifted -${ACTIVE_FUNCTIONAL_AGE_SHIFT} yrs` : 'bracketed curve: 7.5/13.5/30% per decade'})${RESET}`);
   console.log();
   console.log(`  ${BOLD}target value at age ${s.targetAge}${RESET}  ${atTarget.toFixed(2)} ${ex.unit}`);
   console.log(`  ${BOLD}need NOW (age ${s.currentAge})${RESET}      ${need.toFixed(2)} ${ex.unit}`);
