@@ -9,8 +9,8 @@ window containing one clean rep is cut from each video and converted to
 a looping GIF: 640px wide, 10 fps, 128-color palette, bayer dither,
 hqdn3d denoise (halves file size on the dark clips).
 
-Swim (tread water) and VO2 max intentionally have no image (decided
-2026-07-23) — their cards render without a banner.
+VO2 max intentionally has no image (decided 2026-07-23) — its card
+renders without a banner.
 
 Requires ffmpeg on PATH.
 
@@ -54,11 +54,12 @@ VIDEOS = {
         'shows': 'woman performing a barbell deadlift, full side view',
     },
     'tgu': {
-        'pexels_id': 8893504,
-        'page': 'https://www.pexels.com/video/a-woman-lifting-a-kettlebell-8893504/',
-        'start': 8, 'duration': 4.5, 'crop': '2160:1215:0:250',
-        'shows': 'woman raising a kettlebell to full overhead extension; '
-                 'closest female match on Pexels — no Turkish get-up video exists there',
+        'pexels_id': 4945556,
+        'page': 'https://www.pexels.com/video/4945556/',
+        'start': 6, 'duration': 5, 'crop': None,
+        'shows': 'woman pressing a kettlebell from shoulder rack to one-arm '
+                 'overhead lockout, free arm out for balance — the TGU top '
+                 'position; no full female TGU video exists on any free-license site',
     },
     'front-squat': {
         'pexels_id': 7690493,
@@ -66,6 +67,13 @@ VIDEOS = {
         'start': 2, 'duration': 4.5, 'crop': '2160:1620:0:1300',
         'shows': 'woman in a deep squat holding a medicine ball at her chest '
                  '(goblet form; no barbell front squat by a woman exists on Pexels)',
+    },
+    'swim': {
+        'pexels_id': 9635213,
+        'page': 'https://www.pexels.com/video/9635213/',
+        'start': 7, 'duration': 5, 'crop': None,
+        'shows': 'woman treading water vertically in an indoor pool, head above '
+                 'the surface, staying in place between lane lines',
     },
 }
 

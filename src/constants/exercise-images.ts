@@ -4,7 +4,7 @@
  * `require(...gif)`, which is a Metro/Expo bundler feature.
  *
  * `Partial<Record<ExerciseId, ...>>`: exercises without a registered image
- * (swim, vo2max — decided 2026-07-23) render their card without a thumbnail;
+ * (vo2max — decided 2026-07-23) render their card without a banner;
  * callers must guard on undefined.
  *
  * See `scripts/build-exercise-images.py` to regenerate the GIFs from source.
@@ -18,4 +18,5 @@ export const EXERCISE_IMAGES: Partial<Record<ExerciseId, ImageSourcePropType>> =
   deadlift: require('../../assets/exercises/deadlift.gif'),
   tgu: require('../../assets/exercises/tgu.gif'),
   'front-squat': require('../../assets/exercises/front-squat.gif'),
+  swim: require('../../assets/exercises/swim.gif'),
 };
