@@ -139,20 +139,7 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Image credits</Text>
           <Text style={styles.body}>
-            Exercise animations are cut from stock videos on{' '}
-            <Text
-              style={styles.sourceText}
-              onPress={() => Linking.openURL('https://www.pexels.com')}
-            >
-              Pexels
-            </Text>
-            , whose license allows free use and modification without
-            attribution. Source links for each clip live in
-            LICENSES-thirdparty.md in the repository.
-          </Text>
-          <Text style={styles.body}>
-            Full license text and canonical source URLs live in
-            LICENSES-thirdparty.md in the repository.
+                        Exercise animations are original illustrations drawn for this app. They are not stock footage and carry no third-party license. Details live in LICENSES-thirdparty.md in the repository.
           </Text>
         </View>
 
