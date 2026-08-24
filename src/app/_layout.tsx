@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useUserStore } from '@/store/user-store';
+import { Analytics } from '@vercel/analytics/react';
 
 export { ErrorBoundary } from '@/components/error-boundary';
 
@@ -22,6 +23,7 @@ export default function RootLayout() {
           animation: 'slide_from_right',
         }}
       />
+      <Analytics />
     </>
   );
 }
