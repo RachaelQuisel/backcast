@@ -14,9 +14,9 @@ import type { ExerciseId } from './exercises';
 
 export const EXERCISE_IMAGES: Partial<Record<ExerciseId, ImageSourcePropType>> = {
   ohp: require('../../assets/exercises/ohp.gif'),
-  'farmers-walk': require('../../assets/exercises/farmers-walk.gif'),
+'farmers-walk': require('../../assets/exercises/farmerswalk.gif'),
   deadlift: require('../../assets/exercises/deadlift.gif'),
   tgu: require('../../assets/exercises/tgu.gif'),
-  'front-squat': require('../../assets/exercises/front-squat.gif'),
+'front-squat': require('../../assets/exercises/frontsquat.gif'),
   swim: require('../../assets/exercises/swim.gif'),
 };
