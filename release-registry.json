@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "repository": "RachaelQuisel/backcast",
+  "packages": [],
+  "skills": [
+    {
+      "path": ".agents/skills/supabase-postgres-best-practices/SKILL.md",
+      "version": "1.1.2",
+      "sha256": "0f069de364e772a69ab2b202d54e044b351babf3868536a339e2c746be98f80e",
+      "source": ".agents/skills/supabase-postgres-best-practices/SKILL.md",
+      "guide": ".agents/skills/supabase-postgres-best-practices/README.md"
+    },
+    {
+      "path": ".agents/skills/supabase/SKILL.md",
+      "version": "1.1.2",
+      "sha256": "572b2e31ab47aeba6c7a455b4323c135dc6662eaf771d06bcbad845b829ea824",
+      "source": ".agents/skills/supabase/SKILL.md",
+      "guide": ".agents/skills/supabase/README.md"
+    }
+  ],
+  "copies": []
+}
