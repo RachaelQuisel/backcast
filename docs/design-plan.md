@@ -1,13 +1,13 @@
 # Backcast design plan
 
-Status: Step 1 complete. Overall progress: **25%**
+Status: Steps 1 and 2 complete. Overall progress: **50%**
 
 | Step | What | Status |
 |---|---|---|
 | 1 | Design plan: tokens, type, layout, principles, cliché review | 🟩 Done |
-| 2 | `theme.ts` tokens + font loading, pilot on the goals screen | 🟥 To Do (needs approval) |
+| 2 | `theme.ts` tokens + font loading, pilot on the goals screen | 🟩 Done |
 | 3 | Roll tokens out to onboarding, dashboard, log, about, index | 🟥 To Do |
-| 4 | Replace exercise animations | 🟥 To Do (blocked: network + source decision) |
+| 4 | Replace exercise animations | 🟥 To Do (Pexels access approved; sourcing next) |
 
 ---
 
@@ -165,7 +165,20 @@ The cards below keep the target number as the hero, per the earlier decision.
 
 This sandbox can't reach Pexels or Wikimedia (connections refused). I can't download or review new footage until the network allows those hosts, or until you supply the files.
 
-## 8. Not in scope
+## 8. Step 2 notes (what shipped in the pilot)
+
+- **Files:** `src/constants/theme.ts` (new `Palette`, `FontFamily`, `Type`, `Radius`, `MinTouch`), `src/hooks/use-palette.ts`, `src/hooks/use-count-up.ts`, `src/app/_layout.tsx` (font loading), `src/app/goals.tsx` (rebuilt).
+- **Bug fixed:** the goals title was hard-coded to "80" and ignored the goal age picked in onboarding. It now reads `targetAge` from the store.
+- **Changed from the plan:** the age choices are 75, 80, 85, 90 and 100, matching onboarding, instead of 70, 80, 90 and 100. Two screens offering different ages would be confusing.
+- **Added token:** `onFuture`, for text on the ochre fill. Dark mode needed a dark text color there to pass contrast.
+- **Behavior change:** "Continue" is disabled until one goal is picked. Before, tapping it with nothing selected silently selected all seven.
+- **Targets on each row** now show today's number (same math as the dashboard, custom targets included) and recount when the goal age changes. Reduced-motion settings skip the animation.
+- **Bundle:** web JavaScript went from 1.3 MB to 1.4 MB. Reanimated's reduced-motion hook was tried first and added 0.8 MB, so it was replaced with React Native's built-in `AccessibilityInfo`.
+- **Verified:** type check passes (one existing error in the unused template file `animated-icon.web.tsx`), static web export builds, screenshots checked in light, dark, picker open and nothing selected.
+- **Open design question:** Atkinson Hyperlegible's zero carries a slash (to tell it apart from the letter O), so the hero numeral reads "8Ø". It's a legibility feature, but it's prominent at 72px.
+- **Not yet verified:** iOS and Android builds. Only the web export was run here.
+
+## 9. Not in scope
 
 - The 47 npm vulnerabilities in the last Vercel build. Worth a separate session.
 - Any change to the backcast math.
