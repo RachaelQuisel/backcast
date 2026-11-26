@@ -1,31 +1,28 @@
 # Third-party asset licenses
 
-The six animated exercise demos under `assets/exercises/` are original
-illustrations drawn for this app. They are not derived from third-party
-footage and carry no external license or attribution requirement.
+Six animated exercise demos live under `assets/exercises/`. Five are original
+line illustrations drawn for this app. One, the Turkish get-up, is cut from
+a Pexels stock video. VO2 max has no bundled image, decided 2026-07-23.
 
-VO2 max has no bundled image, decided 2026-07-23.
+## Original illustrations
 
-Each file is a looping 640x400 GIF of one full repetition, drawn as a line
-figure and rendered at 12 fps. The Turkish get-up runs at 8 fps over eight
-seconds so that all seven positions stay legible.
+No external license or attribution requirement. Each is a looping 640x400
+GIF of one repetition, drawn as a line figure.
 
-`ohp.gif` — overhead press: rack at the collarbone, bar tracking past the
-face, elbows locked out overhead.
+`ohp.gif` — overhead press.
 
-`farmers-walk.gif` — farmer's carry: upright torso, loaded at both sides,
-walking.
+`farmerswalk.gif` — farmer's carry.
 
-`deadlift.gif` — deadlift: bar off the floor up the shins, hinge to a
-locked-out hip.
+`deadlift.gif` — deadlift.
 
-`tgu.gif` — Turkish get-up: supine, to the elbow, to the hand, high bridge,
-sweep through, half kneel, stand.
+`swim.gif` — tread water.
 
-`swim.gif` — tread water: vertical body, head above the surface, sculling
-hands and eggbeater kick.
+`frontsquat.gif` — front squat.
 
-`front-squat.gif` — front squat: barbell in the front rack, elbows forward,
-hip crease finishing below the knee.
+## Stock footage
 
-No Pexels, Pixabay, or Wikimedia footage remains in this repository.
+`tgu.gif` — cut from [Pexels video 4945556](https://www.pexels.com/video/4945556/),
+used under the [Pexels License](https://www.pexels.com/license/) (free to use
+and modify, no attribution required). The clip shows a one-arm kettlebell
+press to overhead lockout, the top position of the get-up, not the full
+movement. Built by `scripts/build-exercise-images.py`.

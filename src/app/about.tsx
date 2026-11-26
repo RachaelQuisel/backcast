@@ -139,7 +139,7 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Image credits</Text>
           <Text style={styles.body}>
-                        Exercise animations are original illustrations drawn for this app. They are not stock footage and carry no third-party license. Details live in LICENSES-thirdparty.md in the repository.
+                        Five exercise animations are original illustrations drawn for this app. The Turkish get-up comes from a Pexels stock video, used under the Pexels License. Details live in LICENSES-thirdparty.md in the repository.
           </Text>
         </View>
 
