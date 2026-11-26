@@ -1,22 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo } from 'react-native';
+import { useReduceMotion } from '@/hooks/use-reduce-motion';
 
 const DURATION_MS = 450;
-
-/**
- * The OS "reduce motion" setting, kept current. Uses React Native's built-in
- * AccessibilityInfo rather than Reanimated's hook, which would pull the whole
- * Reanimated library (~0.8 MB) into the web bundle for one boolean.
- */
-function useReduceMotion(): boolean {
-  const [reduce, setReduce] = useState(false);
-  useEffect(() => {
-    AccessibilityInfo.isReduceMotionEnabled().then(setReduce);
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduce);
-    return () => sub.remove();
-  }, []);
-  return reduce;
-}
 
 /**
  * Animates a number from its previous value to `target`, so a change of goal
@@ -24,7 +9,9 @@ function useReduceMotion(): boolean {
  * Jumps straight to the value when the OS "reduce motion" setting is on.
  */
 export function useCountUp(target: number): number {
-  const reduceMotion = useReduceMotion();
+  // Unknown (null) counts as motion allowed: the recount only runs after a
+  // tap, by which time the OS has answered.
+  const reduceMotion = useReduceMotion() === true;
   const [value, setValue] = useState(target);
   const from = useRef(target);
 

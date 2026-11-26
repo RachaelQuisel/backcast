@@ -139,7 +139,7 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Image credits</Text>
           <Text style={styles.body}>
-                        Five exercise animations are original illustrations drawn for this app. The Turkish get-up comes from a Pexels stock video, used under the Pexels License. Details live in LICENSES-thirdparty.md in the repository.
+                        The farmer's walk, front squat and tread water animations are original illustrations drawn for this app. The deadlift, overhead press and Turkish get-up come from Pexels stock videos, used under the Pexels License. Details live in LICENSES-thirdparty.md in the repository.
           </Text>
         </View>
 

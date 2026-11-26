@@ -7,13 +7,12 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  Image,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
 import { EXERCISES, backcast } from '@/constants/exercises';
-import { EXERCISE_IMAGES } from '@/constants/exercise-images';
+import { ExerciseMedia } from '@/components/exercise-media';
 
 export default function Log() {
   const { exerciseId } = useLocalSearchParams<{ exerciseId: string }>();
@@ -66,14 +65,11 @@ export default function Log() {
         </Pressable>
 
         <View style={styles.main}>
-          {EXERCISE_IMAGES[exercise.id] && (
-            <Image
-              source={EXERCISE_IMAGES[exercise.id]}
-              style={styles.exerciseBanner}
-              resizeMode="cover"
-              accessibilityLabel={exercise.name}
-            />
-          )}
+          <ExerciseMedia
+            id={exercise.id}
+            style={styles.exerciseBanner}
+            accessibilityLabel={exercise.name}
+          />
           <View style={styles.exerciseHeader}>
             <View style={styles.exerciseHeaderText}>
               <Text style={styles.exerciseName}>{exercise.name}</Text>

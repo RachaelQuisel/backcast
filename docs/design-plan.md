@@ -7,7 +7,7 @@ Status: Steps 1 and 2 complete. Overall progress: **50%**
 | 1 | Design plan: tokens, type, layout, principles, cliché review | 🟩 Done |
 | 2 | `theme.ts` tokens + font loading, pilot on the goals screen | 🟩 Done |
 | 3 | Roll tokens out to onboarding, dashboard, log, about, index | 🟥 To Do |
-| 4 | Replace exercise animations | 🟥 To Do (Pexels access approved; sourcing next) |
+| 4 | Replace exercise animations | 🟨 In Progress (deadlift and overhead press done; 4 left to film) |
 
 ---
 
@@ -178,7 +178,18 @@ This sandbox can't reach Pexels or Wikimedia (connections refused). I can't down
 - **Open design question:** Atkinson Hyperlegible's zero carries a slash (to tell it apart from the letter O), so the hero numeral reads "8Ø". It's a legibility feature, but it's prominent at 72px.
 - **Not yet verified:** iOS and Android builds. Only the web export was run here.
 
-## 9. Not in scope
+## 9. Step 4 notes (exercise videos)
+
+- **Source search:** Pexels has good footage of women for only two of the six movements. Farmer's walk, Turkish get-up and front squat clips were the wrong movement, and the tread-water clip barely shows treading.
+- **Decision:** the faster fallback. Deadlift and overhead press use Pexels footage now; the other four keep their current animations until they're filmed.
+- **Format:** short muted MP4 loops instead of GIFs, played with `expo-video`. 123 KB and 130 KB, against about 4.5 MB for the same footage as a GIF.
+- **Files:** `assets/exercises/deadlift.mp4`, `assets/exercises/ohp.mp4`, `src/components/exercise-media.tsx` (video if present, else image), `src/hooks/use-reduce-motion.ts`, and the dashboard and log screens now render through `ExerciseMedia`.
+- **Reduced motion:** videos hold on their first frame instead of playing.
+- **Kept, not deleted:** `ohp.gif` and `deadlift.gif` stay in the folder but are no longer bundled. Deleting them needs Rachael's approval.
+- **Known limits:** the overhead press lifter dips her knees (a push press, not a strict press), the bar touches the top edge at lockout, and the camera drifts. Mixed styles (footage next to line drawings) until the other four are filmed.
+- **Verified on web:** both videos load, play muted on a loop, and pause under reduced motion. Not yet verified on iOS or Android.
+
+## 10. Not in scope
 
 - The 47 npm vulnerabilities in the last Vercel build. Worth a separate session.
 - Any change to the backcast math.
