@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -9,8 +9,17 @@ import { MinTouch, Radius, Spacing, Type, type PaletteColors } from '@/constants
 import { usePalette } from '@/hooks/use-palette';
 import { useCountUp } from '@/hooks/use-count-up';
 
-/** Same goal ages onboarding offers, so both screens agree. */
+/** Same quick-pick goal ages onboarding offers, so both screens agree. */
 const AGE_CHOICES = [75, 80, 85, 90, 100] as const;
+
+/**
+ * The picker's options: the quick picks plus any other age the person has
+ * chosen (onboarding accepts any age from 70 to 100, e.g. 72), so their own
+ * choice stays selectable after they try a different one.
+ */
+function ageChoicesWith(...extra: number[]): number[] {
+  return [...new Set([...AGE_CHOICES, ...extra])].sort((a, b) => a - b);
+}
 
 /**
  * Goals: pick the everyday activities you want to keep at your goal age.
@@ -37,6 +46,17 @@ export default function Goals() {
     setProfile,
   } = useUserStore();
   const [agePickerOpen, setAgePickerOpen] = useState(false);
+  // Every goal age this screen has shown, so the person's own age (e.g. 72
+  // from onboarding) can be picked again after they try another. A set, not
+  // the first value: the first render shows the store's default (80) before
+  // the saved profile loads.
+  const seenAges = useRef(new Set<number>());
+  seenAges.current.add(targetAge);
+  const ageChoices = ageChoicesWith(...seenAges.current);
+  // The store can only change targetAge through a complete profile. Without
+  // one (normally impossible after onboarding), show the age without a picker
+  // rather than a picker that silently does nothing.
+  const canChangeAge = Boolean(age && sex && weight);
 
   const count = selectedGoals.length;
 
@@ -60,20 +80,26 @@ export default function Goals() {
           What do you want to do at
         </Text>
 
-        <Pressable
-          style={styles.ageButton}
-          onPress={() => setAgePickerOpen((open) => !open)}
-          accessibilityRole="button"
-          accessibilityLabel={`Goal age ${targetAge}. Change goal age`}
-          accessibilityState={{ expanded: agePickerOpen }}
-        >
-          <Text style={styles.ageNumeral}>{targetAge}</Text>
-          <Text style={styles.ageCaret}>{agePickerOpen ? '▴' : '▾'}</Text>
-        </Pressable>
+        {canChangeAge ? (
+          <Pressable
+            style={styles.ageButton}
+            onPress={() => setAgePickerOpen((open) => !open)}
+            accessibilityRole="button"
+            accessibilityLabel={`Goal age ${targetAge}. Change goal age`}
+            accessibilityState={{ expanded: agePickerOpen }}
+          >
+            <Text style={styles.ageNumeral}>{targetAge}</Text>
+            <Text style={styles.ageCaret}>{agePickerOpen ? '▴' : '▾'}</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.ageButton}>
+            <Text style={styles.ageNumeral}>{targetAge}</Text>
+          </View>
+        )}
 
-        {agePickerOpen && (
+        {canChangeAge && agePickerOpen && (
           <View style={styles.ageChoices}>
-            {AGE_CHOICES.map((choice) => {
+            {ageChoices.map((choice) => {
               const isCurrent = choice === targetAge;
               return (
                 <Pressable
