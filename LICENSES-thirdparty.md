@@ -1,31 +1,46 @@
 # Third-party asset licenses
 
-The six animated exercise demos under `assets/exercises/` are original
-illustrations drawn for this app. They are not derived from third-party
-footage and carry no external license or attribution requirement.
-
+Six exercise demos live under `assets/exercises/`. Two are original line
+illustrations drawn for this app. Three are cut from Pexels stock videos.
+One is used with the creator's permission.
 VO2 max has no bundled image, decided 2026-07-23.
 
-Each file is a looping 640x400 GIF of one full repetition, drawn as a line
-figure and rendered at 12 fps. The Turkish get-up runs at 8 fps over eight
-seconds so that all seven positions stay legible.
+## Original illustrations
 
-`ohp.gif` — overhead press: rack at the collarbone, bar tracking past the
-face, elbows locked out overhead.
+No external license or attribution requirement. Each is a looping 640x400
+GIF of one repetition, drawn as a line figure.
 
-`farmers-walk.gif` — farmer's carry: upright torso, loaded at both sides,
-walking.
+`farmerswalk.gif` — farmer's carry.
 
-`deadlift.gif` — deadlift: bar off the floor up the shins, hinge to a
-locked-out hip.
+`frontsquat.gif` — front squat.
 
-`tgu.gif` — Turkish get-up: supine, to the elbow, to the hand, high bridge,
-sweep through, half kneel, stand.
+`ohp.gif`, `deadlift.gif` and `swim.gif` are earlier line drawings of the
+overhead press, deadlift and tread water. They are kept in the folder but no
+longer used by the app.
 
-`swim.gif` — tread water: vertical body, head above the surface, sculling
-hands and eggbeater kick.
+## Stock footage
 
-`front-squat.gif` — front squat: barbell in the front rack, elbows forward,
-hip crease finishing below the knee.
+Used under the [Pexels License](https://www.pexels.com/license/): free to use
+and modify, no attribution required. Built by
+`scripts/build-exercise-images.py`.
 
-No Pexels, Pixabay, or Wikimedia footage remains in this repository.
+`deadlift.mp4` — cut from [Pexels video 7674502](https://www.pexels.com/video/a-woman-lifting-a-barbell-7674502/).
+One rep, floor to lockout and back.
+
+`ohp.mp4` — cut from [Pexels video 6509537](https://www.pexels.com/video/female-lifting-weights-6509537/).
+Rack to overhead and back. The lifter dips her knees, so it's a push press
+rather than a strict press. Brightened from the dark original.
+
+`tgu.gif` — cut from [Pexels video 4945556](https://www.pexels.com/video/4945556/).
+The clip shows a one-arm kettlebell press to overhead lockout, the top
+position of the get-up, not the full movement.
+
+## Used with permission
+
+`swim.mp4` — tread water (eggbeater kick), cut from an Instagram reel by
+[@swim_mydream](https://www.instagram.com/swim_mydream/)
+([original post](https://www.instagram.com/reel/DK41ncqyaC7/)). Used in this
+app with the creator's permission, obtained by the app's owner. Not covered
+by any open license: do not reuse it elsewhere without asking the creator.
+Cropped to remove the reel's caption text and placed over a blurred copy of
+itself to fit the app's wide banner.

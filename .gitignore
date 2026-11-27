@@ -44,3 +44,6 @@ app-example
 /android
 .vercel
 .cache/
+
+# Python bytecode
+__pycache__/

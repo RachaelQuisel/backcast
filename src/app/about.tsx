@@ -139,7 +139,7 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Image credits</Text>
           <Text style={styles.body}>
-                        Exercise animations are original illustrations drawn for this app. They are not stock footage and carry no third-party license. Details live in LICENSES-thirdparty.md in the repository.
+                        The farmer's walk and front squat animations are original illustrations drawn for this app. The deadlift, overhead press and Turkish get-up come from Pexels stock videos, used under the Pexels License. The tread water video is by @swim_mydream on Instagram, used with permission. Details live in LICENSES-thirdparty.md in the repository.
           </Text>
         </View>
 

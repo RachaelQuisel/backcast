@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Image } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '@/store/user-store';
 import { EXERCISES, backcast, targetAtAge } from '@/constants/exercises';
-import { EXERCISE_IMAGES } from '@/constants/exercise-images';
+import { ExerciseMedia } from '@/components/exercise-media';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -166,14 +166,11 @@ export default function Dashboard() {
                 }
               }}
             >
-              {EXERCISE_IMAGES[exercise.id] && (
-                <Image
-                  source={EXERCISE_IMAGES[exercise.id]}
-                  style={styles.exerciseBanner}
-                  resizeMode="cover"
-                  accessibilityLabel={exercise.name}
-                />
-              )}
+              <ExerciseMedia
+                id={exercise.id}
+                style={styles.exerciseBanner}
+                accessibilityLabel={exercise.name}
+              />
               <View style={styles.exerciseHeader}>
                 <View style={styles.exerciseHeaderText}>
                   <Text style={styles.exerciseName}>{exercise.name}</Text>
