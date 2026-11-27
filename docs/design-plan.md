@@ -7,7 +7,7 @@ Status: Steps 1 and 2 complete. Overall progress: **50%**
 | 1 | Design plan: tokens, type, layout, principles, cliché review | 🟩 Done |
 | 2 | `theme.ts` tokens + font loading, pilot on the goals screen | 🟩 Done |
 | 3 | Roll tokens out to onboarding, dashboard, log, about, index | 🟥 To Do |
-| 4 | Replace exercise animations | 🟨 In Progress (deadlift and overhead press done; 4 left to film) |
+| 4 | Replace exercise animations | 🟨 In Progress (deadlift, overhead press, tread water done; 3 left) |
 
 ---
 
@@ -186,6 +186,7 @@ This sandbox can't reach Pexels or Wikimedia (connections refused). I can't down
 - **Files:** `assets/exercises/deadlift.mp4`, `assets/exercises/ohp.mp4`, `src/components/exercise-media.tsx` (video if present, else image), `src/hooks/use-reduce-motion.ts`, and the dashboard and log screens now render through `ExerciseMedia`.
 - **Reduced motion:** videos hold on their first frame instead of playing.
 - **Kept, not deleted:** `ohp.gif` and `deadlift.gif` stay in the folder but are no longer bundled. Deleting them needs Rachael's approval.
+- **Tread water:** an Instagram reel by @swim_mydream, used with the creator's permission (obtained by Rachael). The eggbeater-kick section, filmed at the waterline so the head above and the legs below both show. Caption text cropped out; the tall phone video sits over a blurred copy of itself to fill the wide banner. 178 KB.
 - **Known limits:** the overhead press lifter dips her knees (a push press, not a strict press), the bar touches the top edge at lockout, and the camera drifts. Mixed styles (footage next to line drawings) until the other four are filmed.
 - **Verified on web:** both videos load, play muted on a loop, and pause under reduced motion. Not yet verified on iOS or Android.
 

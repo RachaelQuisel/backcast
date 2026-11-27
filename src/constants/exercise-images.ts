@@ -9,8 +9,8 @@
  *
  * Videos are short muted MP4 loops (about 125 KB each; the same clip as a GIF
  * is about 4.5 MB). See `scripts/build-exercise-images.py` to rebuild them.
- * `ohp.gif` and `deadlift.gif` (the earlier line drawings) are kept in
- * assets/exercises/ but no longer bundled.
+ * `ohp.gif`, `deadlift.gif` and `swim.gif` (the earlier line drawings) are
+ * kept in assets/exercises/ but no longer bundled.
  */
 import type { ImageSourcePropType } from 'react-native';
 import type { VideoSource } from 'expo-video';
@@ -19,11 +19,11 @@ import type { ExerciseId } from './exercises';
 export const EXERCISE_VIDEOS: Partial<Record<ExerciseId, VideoSource>> = {
   ohp: require('../../assets/exercises/ohp.mp4'),
   deadlift: require('../../assets/exercises/deadlift.mp4'),
+  swim: require('../../assets/exercises/swim.mp4'),
 };
 
 export const EXERCISE_IMAGES: Partial<Record<ExerciseId, ImageSourcePropType>> = {
   'farmers-walk': require('../../assets/exercises/farmerswalk.gif'),
   tgu: require('../../assets/exercises/tgu.gif'),
   'front-squat': require('../../assets/exercises/frontsquat.gif'),
-  swim: require('../../assets/exercises/swim.gif'),
 };

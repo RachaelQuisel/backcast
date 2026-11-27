@@ -1,7 +1,8 @@
 # Third-party asset licenses
 
-Six exercise demos live under `assets/exercises/`. Three are original line
+Six exercise demos live under `assets/exercises/`. Two are original line
 illustrations drawn for this app. Three are cut from Pexels stock videos.
+One is used with the creator's permission.
 VO2 max has no bundled image, decided 2026-07-23.
 
 ## Original illustrations
@@ -11,12 +12,11 @@ GIF of one repetition, drawn as a line figure.
 
 `farmerswalk.gif` — farmer's carry.
 
-`swim.gif` — tread water.
-
 `frontsquat.gif` — front squat.
 
-`ohp.gif` and `deadlift.gif` are earlier line drawings of the overhead press
-and deadlift. They are kept in the folder but no longer used by the app.
+`ohp.gif`, `deadlift.gif` and `swim.gif` are earlier line drawings of the
+overhead press, deadlift and tread water. They are kept in the folder but no
+longer used by the app.
 
 ## Stock footage
 
@@ -34,3 +34,13 @@ rather than a strict press. Brightened from the dark original.
 `tgu.gif` — cut from [Pexels video 4945556](https://www.pexels.com/video/4945556/).
 The clip shows a one-arm kettlebell press to overhead lockout, the top
 position of the get-up, not the full movement.
+
+## Used with permission
+
+`swim.mp4` — tread water (eggbeater kick), cut from an Instagram reel by
+[@swim_mydream](https://www.instagram.com/swim_mydream/)
+([original post](https://www.instagram.com/reel/DK41ncqyaC7/)). Used in this
+app with the creator's permission, obtained by the app's owner. Not covered
+by any open license: do not reuse it elsewhere without asking the creator.
+Cropped to remove the reel's caption text and placed over a blurred copy of
+itself to fit the app's wide banner.

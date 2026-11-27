@@ -10,8 +10,14 @@ src/app/about.tsx and LICENSES-thirdparty.md):
   24 fps, H.264. About 125 KB each; the same clip as a GIF is about 4.5 MB.
 - tgu.gif: kept as a GIF from an earlier build.
 
-The other three (farmerswalk.gif, frontsquat.gif, swim.gif) are original
-line drawings and are not built here. Running this script never touches them.
+Not built here, and never touched by this script:
+- farmerswalk.gif, frontsquat.gif: original line drawings.
+- swim.mp4: cut from an Instagram reel by @swim_mydream, used with
+  permission (see LICENSES-thirdparty.md). Instagram's video links expire,
+  so it can't be re-downloaded automatically. It was made from the reel's
+  33.0-37.0 s window (the eggbeater kick) with:
+    crop=360:442:0:198 (removes the caption text), centered over a blurred
+    copy scaled to 640x400, 24 fps, same MP4 settings as below.
 
 VO2 max intentionally has no image (decided 2026-07-23).
 
