@@ -13,32 +13,31 @@ export function useCountUp(target: number): number {
   // tap, by which time the OS has answered.
   const reduceMotion = useReduceMotion() === true;
   const [value, setValue] = useState(target);
-  const from = useRef(target);
+  // The number currently on screen. A new target starts counting from here,
+  // so a second tap mid-count continues smoothly instead of jumping.
+  const shown = useRef(target);
 
   useEffect(() => {
-    if (reduceMotion || from.current === target) {
-      from.current = target;
+    if (reduceMotion || shown.current === target) {
+      shown.current = target;
       setValue(target);
       return;
     }
 
-    const start = from.current;
+    const start = shown.current;
     const startedAt = Date.now();
     let frame = 0;
 
     const tick = () => {
       const t = Math.min(1, (Date.now() - startedAt) / DURATION_MS);
       const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
-      setValue(start + (target - start) * eased);
+      shown.current = start + (target - start) * eased;
+      setValue(shown.current);
       if (t < 1) frame = requestAnimationFrame(tick);
-      else from.current = target;
     };
     frame = requestAnimationFrame(tick);
 
-    return () => {
-      cancelAnimationFrame(frame);
-      from.current = target;
-    };
+    return () => cancelAnimationFrame(frame);
   }, [target, reduceMotion]);
 
   return value;

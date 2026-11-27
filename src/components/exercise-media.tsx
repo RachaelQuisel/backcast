@@ -1,6 +1,7 @@
 import React from 'react';
 import { Image, type ImageStyle, type StyleProp, type ViewStyle } from 'react-native';
 import { useVideoPlayer, VideoView, type VideoSource } from 'expo-video';
+import { useIsFocused } from 'expo-router';
 import { EXERCISE_IMAGES, EXERCISE_VIDEOS } from '@/constants/exercise-images';
 import type { ExerciseId } from '@/constants/exercises';
 import { useReduceMotion } from '@/hooks/use-reduce-motion';
@@ -38,7 +39,9 @@ export function ExerciseMedia({ id, style, accessibilityLabel }: Props) {
 /**
  * Muted, looping, no controls: it plays like the GIFs it replaces. Muted is
  * also what lets browsers autoplay it. With "reduce motion" on, it holds on
- * its first frame instead of playing.
+ * its first frame instead of playing. It also pauses while its screen is not
+ * the one in front (for example, the dashboard behind an open log screen),
+ * so hidden videos don't keep decoding and draining battery.
  */
 function ExerciseVideo({
   source,
@@ -50,6 +53,7 @@ function ExerciseVideo({
   accessibilityLabel: string;
 }) {
   const reduceMotion = useReduceMotion();
+  const focused = useIsFocused();
   const player = useVideoPlayer(source, (p) => {
     p.loop = true;
     p.muted = true;
@@ -59,9 +63,9 @@ function ExerciseVideo({
     // Wait for the OS answer: playing first and pausing after would flash
     // motion and reject the browser's play() promise.
     if (reduceMotion === null) return;
-    if (reduceMotion) player.pause();
+    if (reduceMotion || !focused) player.pause();
     else player.play();
-  }, [player, reduceMotion]);
+  }, [player, reduceMotion, focused]);
 
   return (
     <VideoView
